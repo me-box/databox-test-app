@@ -3,7 +3,6 @@ import { render } from 'react-dom';
 import configureStore from './store/configureStore';
 import Root from './containers/Root';
 import init from './comms/websocket';
-import {fetchChannelId} from './actions/WebSocketActions';
 
 const store = configureStore();
 const {dispatch} = store;

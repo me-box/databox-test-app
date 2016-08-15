@@ -4,9 +4,9 @@ import FooterMenu from './FooterMenu';
 import '../../style/sass/style.scss';
 import NetworkStatus from '../components/NetworkStatus';
 import {connect} from 'react-redux';
-import {fetchChannelId} from '../actions/ChannelActions';
 import {windowResize} from '../actions/WindowActions';
 import { bindActionCreators } from 'redux';
+import '../../style/font-awesome/css/font-awesome.min.css';
 
 class App extends Component {
 	
@@ -17,7 +17,6 @@ class App extends Component {
 	} 
 	
 	componentDidMount(){
-		this.props.dispatch(fetchChannelId());
   		window.addEventListener('resize', this._handleResize);
 	}
 

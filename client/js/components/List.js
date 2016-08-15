@@ -8,24 +8,7 @@ class List extends Component {
 	} 
 
 	render() {
-		
-		const mobilecontainer = {
-			width: 375,
-			height: 667,
-			color: "black",
-		}
-		
-		const titlebar = {
-            height: 40,
-            width: '100%',
-            boxShadow: '0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23)',
-            background: '#445662',
-            display: 'flex',
-            flex: '0 1 auto',
-            color: 'white',
-            fontSize: '1.3em',
-        }
-		
+			
 		const heading = this.props.keys.map((item,i)=>{
 			const className = cx({
 				title: i==0,
@@ -50,9 +33,6 @@ class List extends Component {
 		});	
 		
 		return 	<div className="column">
-						<div style={titlebar}>
-							<div className="centered">{this.props.title}</div>
-						</div>
 						<div>
 							<div className="row">{heading}</div>
 						</div>

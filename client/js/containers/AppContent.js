@@ -1,19 +1,27 @@
 import React, { Component } from 'react';
 import {connect} from 'react-redux';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
-import {HEADER_TOOLBAR_HEIGHT,FOOTER_TOOLBAR_HEIGHT} from '../constants/ViewConstants';
-import {TOPPADDING,LEFTPADDING,RIGHTPADDING,CHARTXPADDING,CHARTYPADDING,TICKCOUNT,BARSPACING,YAXISVALUESIZE, AXISLABELSIZE} from '../constants/ChartConstants';
-
+import {HEADER_TOOLBAR_HEIGHT,FOOTER_TOOLBAR_HEIGHT, APP_TITLEBAR_HEIGHT} from '../constants/ViewConstants';
+import { bindActionCreators } from 'redux';
 import '../../style/sass/style.scss';
 import cx from 'classnames';
 import List from '../components/List';
 import Chart from '../components/Chart';
 import {MAXREADINGS} from '../constants/ChartConstants';
+import * as AppActions from '../actions/AppActions';
+import {fetchChannelId} from '../actions/ChannelActions';
+
 class AppContent extends Component {
 	
 	constructor(props){
 		super(props);
+		Object.assign(this, ...bindActionCreators(AppActions, props.dispatch));	
 	} 
+	
+	componentDidMount(){
+		this.props.dispatch(fetchChannelId());
+  		window.addEventListener('resize', this._handleResize);
+	}
 
 	render() {
 	
@@ -23,8 +31,9 @@ class AppContent extends Component {
 		}
 
 		const { apps, dispatch, dimensions } = this.props;
+		const {w,h} = dimensions;
 		
-		const height = dimensions.h - (HEADER_TOOLBAR_HEIGHT+FOOTER_TOOLBAR_HEIGHT);
+		const height = h - (HEADER_TOOLBAR_HEIGHT+FOOTER_TOOLBAR_HEIGHT);
 		
 	    const applist = apps.map((app,i)=>{
 	    	
@@ -32,10 +41,9 @@ class AppContent extends Component {
 	    	
 	    	let style = {
 	    		position: 'absolute',
-	    		width: dimensions.w,
+	    		width: w,
 	    		height: APPHEIGHT,
-	    		border: '1px solid',
-	    		top:  HEADER_TOOLBAR_HEIGHT + (APPHEIGHT * i),	    		
+	    		top:  HEADER_TOOLBAR_HEIGHT + (APPHEIGHT * i),		
 	    	}
 	    	
 	    	let dataview;
@@ -45,23 +53,8 @@ class AppContent extends Component {
 	    	switch (app.view){	
 	    		
 	    		case 'chart':
-	    			
-	    			const options = {
-						TOPPADDING: TOPPADDING,
-						LEFTPADDING: LEFTPADDING,
-						RIGHTPADDING: RIGHTPADDING,
-						CHARTXPADDING:CHARTXPADDING, 
-						CHARTYPADDING: CHARTYPADDING,
-						TICKCOUNT: TICKCOUNT,
-						BARSPACING: BARSPACING,
-						AXISLABELSIZE: AXISLABELSIZE,
-						YAXISVALUESIZE: YAXISVALUESIZE,				
-	    			}
-	    			
 	    			let [config, ...values] = data;
-	    			dataview = 	<div style={style}>
-	    							<Chart {...{title: app.name, w: dimensions.w, h: APPHEIGHT, options:options, config: config, data: values.slice(-MAXREADINGS)}} /> 
-	    						</div>
+	    			dataview = 	<Chart {...{w: w, h: APPHEIGHT, config: config, data: values.slice(-MAXREADINGS)}} /> 	
 	    			break;
 	    			
 	    		case 'text':
@@ -74,10 +67,9 @@ class AppContent extends Component {
 					
 						data.keys = data.keys || [];
 						data.rows = data.rows || [];
-						const props = {title: app.name, keys: data.keys, rows: data.rows};
-						dataview = <div style={style}>
-									<List {...props}/>
-								   </div>
+						const props = {keys: data.keys, rows: data.rows};
+						dataview = <List {...props}/>
+								  
 					}
 	    			break;
 	    	
@@ -91,11 +83,39 @@ class AppContent extends Component {
 	    		[view]:true,
 	    	})
 
-	    	return <div style={{width:'inherit'}}>
-	    				<div key={i} className={classname} style={{width:'inherit'}}>
-							{dataview}
+			const titlebar = {
+				height: APP_TITLEBAR_HEIGHT,
+				width: w,
+				boxShadow: '0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23)',
+				background: '#445662',
+				color: 'white',
+				fontSize: '1.3em',
+				lineHeight: `${APP_TITLEBAR_HEIGHT}px`,
+				textAlign: 'center',
+       	 	}
+       	 	 		
+  			const remove = {
+  				width: 40,
+			  	WebkitBoxFlex: 0, 
+			  	WebkitFlex: '0 0 auto',
+				flex: '0 0 auto',
+			}
+       	 	
+        						
+	    	return <div key={app.id} style={style}>
+	    				<div style={titlebar}>
+	    					<div className="row">
+	    						<div style={remove}>
+	    							<div className="centered" onClick={this.appRemoved.bind(this, app.id)}><i className="fa fa-times fa-fw"></i></div>
+	    						</div>
+	    						<div>
+	    							<div className="centered">{app.name}</div>
+	    						</div>
+	    					</div>
 	    				</div>
-	    				
+	    				<div key={i} className={classname}>
+							{dataview}
+	    				</div>		
 	    		   </div>
 	    });
 

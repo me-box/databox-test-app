@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import cx from 'classnames';
 import {HEADER_TOOLBAR_HEIGHT} from '../constants/ChartConstants';
+import {TOPPADDING,LEFTPADDING,RIGHTPADDING,CHARTXPADDING,CHARTYPADDING,TICKCOUNT,BARSPACING,YAXISVALUESIZE, AXISLABELSIZE} from '../constants/ChartConstants';
+
 import moment from 'moment';
 import {textWidth} from '../utils/utils';
 
@@ -28,27 +30,7 @@ class Chart extends Component {
 		
 		let {w, h, config, options, data} = this.props;
 		
-		const titlebar = {
-            height: 40,
-            width: '100%',
-            boxShadow: '0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23)',
-            background: '#445662',
-            color: 'white',
-            fontSize: '1.3em',
-            lineHeight: '40px',
-            textAlign: 'center',
-        }
-        
-       
-		
-		return 	 <div>
-					<div style={titlebar}>
-						<div className="centered">{this.props.title}</div>
-					</div>
-					<div>
-						<BarChart {...{w:w, h:h-40, config:config, options:options, data:data}} />
-					</div>
-				</div>
+		return 	<BarChart {...{w:w, h:h-40, config:config, options:options, data:data}} />
 				
 	}
 };
@@ -58,12 +40,8 @@ class BarChart extends Component {
 	
 	render(){
 	
-		const {w, h, options, config, data} = this.props;
-		console.log("options are");
-		console.log(options);
-		const {TOPPADDING,LEFTPADDING,RIGHTPADDING,CHARTXPADDING,CHARTYPADDING,TICKCOUNT,BARSPACING,YAXISVALUESIZE, AXISLABELSIZE} = options;
+		const {w, h, config, data} = this.props;
 		
-		console.log(`${w}, ${h}`);
 		
 		if (data.length <= 0){
 			return null;
@@ -105,12 +83,11 @@ class BarChart extends Component {
 		const RANGEMIN = MIN <= 0 ? MIN : MIN - TICKDELTA;
 		const CLOSESTPOINTTOORIGIN = MAX - (Math.round(MAX/TICKDELTA) * TICKDELTA);
 
-		console.log(`CHARTHEIGHT: ${CHARTHEIGHT} CHARTWIDTH: ${CHARTWIDTH} ORIGIN ${ORIGIN} CPTO: ${CLOSESTPOINTTOORIGIN} RANGEMIN:${RANGEMIN} TICKDELTA:${TICKDELTA} MAX:${MAX} MIN:${MIN}`);
+		//console.log(`CHARTHEIGHT: ${CHARTHEIGHT} CHARTWIDTH: ${CHARTWIDTH} ORIGIN ${ORIGIN} CPTO: ${CLOSESTPOINTTOORIGIN} RANGEMIN:${RANGEMIN} TICKDELTA:${TICKDELTA} MAX:${MAX} MIN:${MIN}`);
 		
 		const yPos = (value)=>{
 			const divisor = MAX-RANGEMIN;
 			const yp = CHARTHEIGHT - ((value - RANGEMIN)  * (CHARTHEIGHT/divisor));
-			console.log(`ypos for ${value} is ${yp}`);
 			return yp;
 		};
 
@@ -250,7 +227,7 @@ class BarChart extends Component {
 			stroke: _colourFor(item.id),
 			strokeOpacity: 1.0,
 			strokeWidth: '1px',
-			//filter: 'url(#shadow)', //works with newer versions of react...
+			filter: 'url(#shadow)', //works with newer versions of react...
 		  }
   
   			

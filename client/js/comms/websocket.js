@@ -1,11 +1,12 @@
 import io from 'socket.io-client';
-import {newMessage} from '../actions/WebSocketActions';
+import {newMessage} from '../actions/AppActions';
 
 export default function init(namespace, appId, dispatch) {
   
   const socket = io('/'+namespace, {path: '/socket.io'});
  
   socket.on("connect", function(){
+  	  console.log(`CALLING JOING ON ${appId}`);
       socket.emit("join", appId);
   });
 

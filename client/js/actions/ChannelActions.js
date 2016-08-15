@@ -7,7 +7,7 @@ import init from '../comms/websocket';
 export function fetchChannelId(){
 	
 	return function (dispatch, getState) {
-		
+		console.log("calling fetch channel id");
 		dispatch(networkAccess(`requesting channelID`));
 		request
 		  .get(`/comms/channelID`)

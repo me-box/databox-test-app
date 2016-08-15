@@ -1,4 +1,4 @@
-import { APP_MESSAGE } from '../constants/ActionTypes';
+import { APP_MESSAGE, APP_REMOVED } from '../constants/ActionTypes';
 
 
 const addIfNew = (state, action) =>{
@@ -44,13 +44,19 @@ const app = (state, action) =>{
 export default function apps(state = [], action) {
   	switch (action.type) {
 	  
+	  case APP_REMOVED:
+	  	
+	  	return state.filter((app)=>{
+	  		console.log("looking at app");
+	  		console.log(app);
+	  		return app.id != action.appId;
+	  	});
+	  	
 	  case APP_MESSAGE:
 	  
 	  	return addIfNew(state, action).map(a=>{
 	  		return app(a, action);
 	  	})
-
-	  	return newstate;
 
 	  default:
 	    return state;
