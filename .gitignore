@@ -3,3 +3,4 @@ bower_components
 node_modules
 npm-debug.log
 server/static/app.js
+server/config.js

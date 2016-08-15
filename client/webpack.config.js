@@ -16,9 +16,12 @@ module.exports = {
 
     devServer:{
          proxy: {
-	    '/socket.io/*':{
-		target: 'http://localhost:9095',
-	    }
+	    		'/socket.io/*':{
+					target: 'http://localhost:9095',
+	    		},
+	    		'/comms/*':{
+					target: 'http://localhost:9095',
+	    		}
         }
     },
 

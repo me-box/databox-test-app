@@ -29,10 +29,11 @@ const app = (state, action) =>{
 			if (state.id !== action.id){
 				return state;
 			}
-
-			
-			return Object.assign({}, state, {data: action.data, view:action.view})
-		
+			if (action.policy === "replace"){
+				return Object.assign({}, state, {data: action.data, view:action.view})
+			}else{
+				return Object.assign({}, state, {data: [...state.data, action.data], view:action.view})
+			}
 			
 		default:
 			return state;

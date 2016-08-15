@@ -6,6 +6,7 @@ export function newMessage(msg) {
  
   return {
     type: APP_MESSAGE,
+    policy: view === "list" ? "replace" : "append", 
     id,
     name,
     view,

@@ -114,3 +114,9 @@ a {
   font-size: 1.2em;
 }
 
+.animated{
+    -webkit-transition:all 800ms ease-in-out, height 800ms ease-in-out;
+    -moz-transition:all 800ms ease-in-out, height 800ms ease-in-out;
+    -o-transition:all 800ms ease-in-out, height 800ms ease-in-out;
+    transition:all 800ms ease-in-out, height 800ms ease-in-out;
+}
