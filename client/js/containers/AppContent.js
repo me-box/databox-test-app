@@ -7,6 +7,8 @@ import '../../style/sass/style.scss';
 import cx from 'classnames';
 import List from '../components/List';
 import Chart from '../components/Chart';
+import Gauge from '../components/Gauge';
+
 import {MAXREADINGS} from '../constants/ChartConstants';
 import * as AppActions from '../actions/AppActions';
 import {fetchChannelId} from '../actions/ChannelActions';
@@ -35,9 +37,13 @@ class AppContent extends Component {
 		
 		const height = h - (HEADER_TOOLBAR_HEIGHT+FOOTER_TOOLBAR_HEIGHT);
 		
-	    const applist = apps.map((app,i)=>{
-	    	
-	    	let APPHEIGHT = height / apps.length;
+		const appkeys = Object.keys(apps);
+		
+	    const applist = appkeys.map((key,i)=>{
+	    	  
+	        const app = apps[key];
+	        
+	    	let APPHEIGHT = height / appkeys.length;
 	    	
 	    	let style = {
 	    		position: 'absolute',
@@ -46,15 +52,20 @@ class AppContent extends Component {
 	    		top:  HEADER_TOOLBAR_HEIGHT + (APPHEIGHT * i),		
 	    	}
 	    	
-	    	let dataview;
+	    	let dataview = null;
 			
 			const data = app.data;
 			
+			
 	    	switch (app.view){	
 	    		
-	    		case 'chart':
+	    		case 'gauge':
+	    			dataview = 	<Gauge {...{w: w, h: APPHEIGHT-APP_TITLEBAR_HEIGHT, data: app}} /> 	
+	    			break;
+	    			
+	    		case 'bar':
 	    			let [config, ...values] = data;
-	    			dataview = 	<Chart {...{w: w, h: APPHEIGHT, config: config, data: values.slice(-MAXREADINGS)}} /> 	
+	    			dataview = 	<Chart {...{w: w, h: APPHEIGHT-APP_TITLEBAR_HEIGHT, config: config, data: values.slice(-MAXREADINGS)}} /> 	
 	    			break;
 	    			
 	    		case 'text':

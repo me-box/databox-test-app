@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import cx from 'classnames';
-import {HEADER_TOOLBAR_HEIGHT} from '../constants/ChartConstants';
+import {APP_TITLEBAR_HEIGHT} from '../constants/ViewConstants';
 import {TOPPADDING,LEFTPADDING,RIGHTPADDING,CHARTXPADDING,CHARTYPADDING,TICKCOUNT,BARSPACING,YAXISVALUESIZE, AXISLABELSIZE} from '../constants/ChartConstants';
 
 import moment from 'moment';
@@ -30,7 +30,7 @@ class Chart extends Component {
 		
 		let {w, h, config, options, data} = this.props;
 		
-		return 	<BarChart {...{w:w, h:h-40, config:config, options:options, data:data}} />
+		return 	<BarChart {...{w:w, h:h, config:config, options:options, data:data}} />
 				
 	}
 };
