@@ -8,14 +8,19 @@ export function appRemoved(appId) {
 }
 export function newMessage(msg) {
 
-  const {id, name, view, data} = msg;
+  console.log("got new message");
+  console.log(msg);
+  const {sourceId, payload, layout} = msg;
+  const {id, name, view, data} = payload;
+  
  
   return {
     type: APP_MESSAGE,
-    //policy: view === "list" ? "replace" : "append", 
     id,
+    sourceId,
+    layout,
     name,
     view,
-    data
+    data,
   }
 }

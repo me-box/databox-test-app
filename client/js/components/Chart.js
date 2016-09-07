@@ -53,14 +53,16 @@ class BarChart extends Component {
 		//calculate the amount of bottom padding we need based on the max width of the x-axis labels
 		const longestlabel = data.reduce((acc, obj)=>{
 			if (obj.x){
-				if (obj.x.length > acc.length){
-					acc = obj.x;
+				if (String(obj.x).length > acc.length){
+					acc = String(obj.x);
 				}
 			}
 			return acc;
 		},""); 
 		
+		
 		const XLABELWIDTH = textWidth(longestlabel, {size:`${XAXISVALUESIZE}px`}) + CHARTYPADDING + 2;
+		
 		
 		const CHARTHEIGHT = h - TOPPADDING - XLABELWIDTH;
 		const CHARTWIDTH  = w - LEFTPADDING - RIGHTPADDING;

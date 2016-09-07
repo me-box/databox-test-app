@@ -1,5 +1,27 @@
 import { APP_MESSAGE, APP_REMOVED } from '../constants/ActionTypes';
 
+const addIfNew = (state, action) =>{
+	switch (action.type){
+
+		case APP_MESSAGE:
+		
+			//can make this more efficient if need 
+			if (state.map(t=>{return t.id}).indexOf(action.id) !== -1){
+				return state.map(t=>{
+					if (t.id === action.id){
+						t.name = action.name;
+					}
+					return t;
+				});
+			}
+			return [...state, {id:action.id, name:action.name, view:action.view, data:[]}]
+
+		default:
+			return state;
+	}
+}
+
+
 const addGaugeData = (state, action) =>{
 	switch (action.type){
 
@@ -19,12 +41,32 @@ const addGaugeData = (state, action) =>{
 	}
 }
 
+const app = (state, action) =>{
+	switch (action.type){
+		case APP_MESSAGE:
+
+			if (state.id !== action.id){
+				return state;
+			}
+			
+			if (["list", "text"].indexOf(action.view) != -1){ //replace data with new
+				return Object.assign({}, state, {data: action.data, view:action.view, name:action.name})
+			}else{	//append data to current
+				return Object.assign({}, state, {data: [...state.data, action.data], view:action.view, name: action.name})
+			}
+			
+		default:
+			return state;
+	}
+}
+
+
 const append = (state = {data:[]}, action)=>{
-	return (Object.assign({}, ...state, {data: [...state.data || [], action.data], view:action.view, sourceId: action.sourceId, id: action.id, name: action.name}));
+	return (Object.assign({}, ...state, {data: [...state.data, action.data], view:action.view, id: action.id, name: action.name}));
 }
 
 const replace = (state = {data:{}}, action)=>{
-	return (Object.assign({}, ...state, {data: action.data, view: action.view, sourceId: action.sourceId, id:action.id, name:action.name}));
+	return (Object.assign({}, ...state, {data: action.data, view: action.view, id:action.id, name:action.name}));
 }
 
 const gauge = (state = {data:[], min:999999, max:-999999}, action)=>{
@@ -35,46 +77,19 @@ const gauge = (state = {data:[], min:999999, max:-999999}, action)=>{
     		return Object.assign({}, ...state, {	data: addGaugeData(state, action),
     									     	view: action.view,
     									     	id: action.id,
-    									     	sourceId: action.sourceId,
     									     	name: action.name,
     									     	min:  Math.min(Number(action.data.x), state.min),
     									     	max:  Math.max(Number(action.data.x), state.max),
     									    });
     	}
     	return state;
-    	
   	default:
     	return state;
   }
 }
 
-const indexFor = (data, sourceId)=>{
-	for (let i = 0; i < data.length; i++){
-		if (data[i].sourceId === sourceId)
-			return i;
-	}
-	return -1;
-}
-
-const insert = (currentdata, action)=>{
-	currentdata = currentdata || {};
-	return Object.assign({}, currentdata, {[action.sourceId] : addData(currentdata[action.sourceId]||{}, action)});
-	
-}
-const insert_old = (currentdata, action)=>{
-	currentdata = currentdata || [];
-	
-	const index = indexFor(currentdata, action.sourceId); 
-	
-	if (index == -1){
-		return [...currentdata, addData(currentdata, action)];
-	}else{
-		return [...currentdata.slice(0, index), addData(currentdata[index], action), ...currentdata.slice(index+1)];
-	}	
-}
 
 const addData = (currentdata, action) =>{
-	
 
 	if (action.view === "gauge"){
 		return gauge(currentdata,action);
@@ -101,9 +116,7 @@ export default function apps(state = {}, action) {
 	  
 	  	
 	  case APP_MESSAGE:
-	  	return Object.assign({}, state, {
-	  										[action.id] : insert(state[action.id], action),
-	  									});
+	  	return Object.assign({}, state, {[action.id] : addData(state[action.id], action)});
 	  
 
 	  default:

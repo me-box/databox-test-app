@@ -6,7 +6,7 @@ export default function init(namespace, appId, dispatch) {
   const socket = io('/'+namespace, {path: '/socket.io'});
  
   socket.on("connect", function(){
-  	  console.log(`CALLING JOING ON ${appId}`);
+  	  console.log(`CALLING JOIN ON ${appId}`);
       socket.emit("join", appId);
   });
 

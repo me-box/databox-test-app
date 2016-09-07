@@ -15,8 +15,7 @@ export default function init(){
 		try {
 			const msg = JSON.parse(message.toString());
 			const channel = msg.channel; //this is set to the user's github acc name
-			//console.log(msg);
-			sendmessage(msg.channel, "databox", "message", msg.payload)
+			sendmessage(msg.channel, "databox", "message", {layout: msg.layout || [], sourceId: msg.sourceId || msg.channel, payload:msg.payload})
 		}
 		catch(err){
 			console.log(err);

@@ -52,7 +52,7 @@ class Line extends Component {
  
   render() {
 
-      console.log(this.props);
+     
 
       let {MIN,MAX,data,w,h,p, STROKEWIDTH, OUTERSTROKEWIDTH} = this.props;
 	  
