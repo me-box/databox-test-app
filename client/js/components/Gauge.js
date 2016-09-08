@@ -79,8 +79,8 @@ class Line extends Component {
       }
 
       const PADDING = p + OUTERSTROKEWIDTH;
-     
-      const r = h > (w/2) ? (w-PADDING-STROKEWIDTH)/2 : (h-STROKEWIDTH/2);
+      const TOPPADDINGWIDE = 10;
+      const r = h > (w/2) ? (w-PADDING-STROKEWIDTH)/2 : (h-TOPPADDINGWIDE-STROKEWIDTH/2);
 
       const x1 = (r) => (w- (2*r))/2;
       const x2 = (r) => w - (w- (2*r))/2;

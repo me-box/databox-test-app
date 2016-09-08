@@ -48,7 +48,7 @@ class BarChart extends Component {
 		}
 		
 		const BARWIDTH = (w-LEFTPADDING-RIGHTPADDING-CHARTXPADDING)/data.length;
-		const XAXISVALUESIZE = Math.min(16,BARWIDTH/2);
+		const XAXISVALUESIZE = Math.min(14,BARWIDTH/2);
 		
 		//calculate the amount of bottom padding we need based on the max width of the x-axis labels
 		const longestlabel = data.reduce((acc, obj)=>{
@@ -64,7 +64,7 @@ class BarChart extends Component {
 		const XLABELWIDTH = textWidth(longestlabel, {size:`${XAXISVALUESIZE}px`}) + CHARTYPADDING + 2;
 		
 		
-		const CHARTHEIGHT = h - TOPPADDING - XLABELWIDTH;
+		const CHARTHEIGHT = h - TOPPADDING - XLABELWIDTH - CHARTXPADDING - AXISLABELSIZE;
 		const CHARTWIDTH  = w - LEFTPADDING - RIGHTPADDING;
 		
 		
@@ -77,12 +77,12 @@ class BarChart extends Component {
 		}, Number.MAX_VALUE);
 
 		if (MIN == MAX){
-		   MIN = MAX-1;
+		   MIN = MAX-0.1;
 		}
 
 		const ORIGIN =  MIN < 0 ? 0 : MIN;
 		let TICKDELTA = (MAX-MIN)/(TICKCOUNT);
-		const RANGEMIN = MIN <= 0 ? MIN : MIN - TICKDELTA;
+		const RANGEMIN = MIN < 0 ? MIN : Math.max(0,MIN - TICKDELTA);
 		const CLOSESTPOINTTOORIGIN = MAX - (Math.round(MAX/TICKDELTA) * TICKDELTA);
 
 		//console.log(`CHARTHEIGHT: ${CHARTHEIGHT} CHARTWIDTH: ${CHARTWIDTH} ORIGIN ${ORIGIN} CPTO: ${CLOSESTPOINTTOORIGIN} RANGEMIN:${RANGEMIN} TICKDELTA:${TICKDELTA} MAX:${MAX} MIN:${MIN}`);
@@ -131,12 +131,12 @@ class BarChart extends Component {
 
 		const zeroAxisStyle = {
 		  strokeWidth: '2px',
-		  stroke: '#4d4d4d',
+		  stroke: '#fff',
 		}
 
 		const axislinestyle = {
 		  strokeWidth: '2px',
-		  stroke: '#4d4d4d',
+		  stroke: '#fff',
 		}
 
 		const xaxisprops = {
@@ -183,7 +183,11 @@ class BarChart extends Component {
 		  strokeWidth: '1px',
 		  strokeOpacity: 0.5,
 		}
-
+		const circlestyle = {
+		  stroke: "#fff",
+		  strokeWidth: '1px',
+	 	  fill: "#37474f",
+		}
 		const ticks = [...Array(TICKCOUNT+1).fill(0)].map((v,tick)=>{
 
 			const lineprops = {
@@ -193,7 +197,16 @@ class BarChart extends Component {
 			  y2: yPos(Math.min(MAX, Math.min(MAX,(RANGEMIN - CLOSESTPOINTTOORIGIN) + ((tick)*TICKDELTA)))), 
 			} 
   
-			return  <line key={tick+1} {...lineprops} style={linestyle}/>
+  			const circleprops = {
+  				r: 5,
+  				cx: CHARTXPADDING,
+  				cy: yPos(Math.min(MAX, Math.min(MAX,(RANGEMIN - CLOSESTPOINTTOORIGIN) + ((tick)*TICKDELTA)))), 
+  			}
+			return  <g key={tick+1}>
+						
+						<line  {...lineprops} style={linestyle}/>
+						<circle {...circleprops} style={circlestyle}/>
+					</g>
 		});
 
 		const maxminlinestyle = {
@@ -225,20 +238,21 @@ class BarChart extends Component {
 
 		  const style = {
 			fill: _colourFor(item.id),
-			fillOpacity: 0.7,
+			fillOpacity: 1.0,
 			stroke: _colourFor(item.id),
 			strokeOpacity: 1.0,
 			strokeWidth: '1px',
-			filter: 'url(#shadow)', //works with newer versions of react...
+			
 		  }
   
   			
 		  const rectprops = {
 								x: CHARTXPADDING + (BARWIDTH * i) + (BARSPACING/2),
 								y: item.y > 0 ? yPos(item.y) : yPos(0), 
+								rx:5,
 								width: Math.max(1,BARWIDTH - BARSPACING),
 								height: Math.abs(yPos(Math.max(RANGEMIN,0))-yPos(item.y)),
-
+								
 							}
 		  
 		  return <rect key={`${item.id}${item.x}`} className="animated" style={style} {...rectprops} />
@@ -250,7 +264,7 @@ class BarChart extends Component {
 		 const yLabelStyle = {
 			  width: CHARTHEIGHT,
 			  height: AXISLABELSIZE + 1,
-			  color: "#4d4d4d",
+			  color: "#fff",
 			  position: 'absolute',
 			  left: 0,
 			  top: TOPPADDING + CHARTHEIGHT,
@@ -263,7 +277,7 @@ class BarChart extends Component {
 
 		  const xLabelStyle = {
 			  width: CHARTWIDTH,
-			  color: "#4d4d4d",
+			  color: "#fff",
 			  position: 'absolute',
 			  left: LEFTPADDING,
 			  top: TOPPADDING + CHARTHEIGHT + XLABELWIDTH + 10,
@@ -304,45 +318,17 @@ class BarChart extends Component {
                   {xlabels}
                   {ylabels}
                   <svg width={CHARTWIDTH} height={CHARTHEIGHT}>
-                    <defs>
-                       <filter id="shadow">
-                          <feFlood
-                             floodOpacity="0.498039"
-                             floodColor="rgb(0,0,0)"
-                             result="flood"
-                              />
-                          <feComposite
-                             in="flood"
-                             in2="SourceGraphic"
-                             operator="in"
-                             result="composite1"
-                            />
-                          <feGaussianBlur
-                             in="composite1"
-                             stdDeviation="1.4"
-                             result="blur"
-                             />
-                          <feOffset
-                             dx="1.5"
-                             dy="2.85882e-15"
-                             result="offset"
-                             />
-                          <feComposite
-                             in="SourceGraphic"
-                             in2="offset"
-                             operator="over"
-                             result="composite2"
-                             />
-                        </filter>
-                    </defs>
+                    
                     <g>
-                      {mintick}
-                      {maxtick}
+                     
+                      {yaxis}
+                      
+                      {RANGEMIN < 0 && zeroAxis}
                       {ticks}
                       {readings}
-                      {RANGEMIN > 0 && xaxis}
-                      {yaxis}
-                      {RANGEMIN < 0 && zeroAxis}
+                      {MIN > 0 && xaxis}
+                      
+                     
                     </g>
                   </svg>
                 </div>

@@ -4,7 +4,10 @@ const addGaugeData = (state, action) =>{
 	switch (action.type){
 
 		case APP_MESSAGE:
-		
+			
+			console.log("adding gauge data and current data is ");
+			console.log(state);
+			
 			const idx = state.data.map(t=>{return t[0].id}).indexOf(action.data.id);
 
 			if (idx == -1){
@@ -13,7 +16,8 @@ const addGaugeData = (state, action) =>{
 			
 			const newdata = [state.data[idx][state.data[idx].length-1], action.data];
 			return [...state.data.slice(0,idx), newdata, ...state.data.slice(idx+1)];
-
+			return state;
+			
 		default:
 			return state;
 	}
@@ -58,7 +62,7 @@ const indexFor = (data, sourceId)=>{
 
 const insert = (currentdata, action)=>{
 	currentdata = currentdata || {};
-	return Object.assign({}, currentdata, {[action.sourceId] : addData(currentdata[action.sourceId]||{}, action)});
+	return Object.assign({}, currentdata, {[action.sourceId] : addData(currentdata[action.sourceId], action)});
 	
 }
 const insert_old = (currentdata, action)=>{
@@ -75,14 +79,16 @@ const insert_old = (currentdata, action)=>{
 
 const addData = (currentdata, action) =>{
 	
-
+	
 	if (action.view === "gauge"){
 		return gauge(currentdata,action);
 	}
 	else if (["list", "text"].indexOf(action.view) !== -1){
+		currentdata = currentdata || {};
 	  	return replace(currentdata, action);
 	}
 	else {
+		currentdata = currentdata || {};
 		return append(currentdata, action);
 	}
 }
