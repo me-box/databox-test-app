@@ -173,7 +173,7 @@ class BarChart extends Component {
 				textAlign: 'left',
 			  }
 
-			  return <div key={item.x} key={i} style={style}>
+			  return <div key={item.x} style={style}>
 						{label}
 					 </div>
 		});

@@ -61,16 +61,17 @@ class AppContent extends Component {
 	        return Object.keys(approw).map((sourcekey,j)=>{
 	    		
 	    		const {row,col} = lookup(layout[appkey],sourcekey);
-	    		console.log(`for app ${appkey}, source:${sourcekey} row is ${row} col is ${col}`);
+	    		
+	    		//console.log(`for app ${appkey}, source:${sourcekey} row is ${row} col is ${col}`);
 	    	
 	    		
 	    		const app = approw[sourcekey];
 	    		const totalcols = layout[appkey][row].length;
-	    		console.log(`total cols for app ${appkey}, source:${sourcekey} are ${totalcols} and total rows are ${layout[appkey].length}`); 
+	    		//console.log(`total cols for app ${appkey}, source:${sourcekey} are ${totalcols} and total rows are ${layout[appkey].length}`); 
 	    		
 	    		const APPHEIGHT =  (APPCONTAINERHEIGHT - APP_TITLEBAR_HEIGHT) / layout[appkey].length; 
 	    		
-	    		console.log(`APPCONTAINERHEIGHT IS ${APPCONTAINERHEIGHT} APPHEIGHT = ${APPHEIGHT}`);
+	    		//console.log(`APPCONTAINERHEIGHT IS ${APPCONTAINERHEIGHT} APPHEIGHT = ${APPHEIGHT}`);
 	    		
 	    		const APPWIDTH  = (w/totalcols);
 	    		

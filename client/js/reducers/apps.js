@@ -1,12 +1,21 @@
 import { APP_MESSAGE, APP_REMOVED } from '../constants/ActionTypes';
 
+
+function _contains(id, layout){
+	for (let i = 0; i < layout.length; i++){
+		for (let j = 0; j < layout[i].length; j++){
+			if (layout[i][j] === id)
+				return true;
+		}
+	}
+	return false;
+}
+
+
 const addGaugeData = (state, action) =>{
 	switch (action.type){
 
 		case APP_MESSAGE:
-			
-			console.log("adding gauge data and current data is ");
-			console.log(state);
 			
 			const idx = state.data.map(t=>{return t[0].id}).indexOf(action.data.id);
 
@@ -37,12 +46,12 @@ const gauge = (state = {data:[], min:999999, max:-999999}, action)=>{
   	case APP_MESSAGE:
   		if (action.data.type === "data"){ //TODO HANDLE INIT TYPES!
     		return Object.assign({}, ...state, {	data: addGaugeData(state, action),
-    									     	view: action.view,
-    									     	id: action.id,
-    									     	sourceId: action.sourceId,
-    									     	name: action.name,
-    									     	min:  Math.min(Number(action.data.x), state.min),
-    									     	max:  Math.max(Number(action.data.x), state.max),
+													view: action.view,
+													id: action.id,
+													sourceId: action.sourceId,
+													name: action.name,
+													min:  Math.min(Number(action.data.x), state.min),
+													max:  Math.max(Number(action.data.x), state.max),
     									    });
     	}
     	return state;
@@ -60,25 +69,40 @@ const indexFor = (data, sourceId)=>{
 	return -1;
 }
 
-const insert = (currentdata, action)=>{
-	currentdata = currentdata || {};
-	return Object.assign({}, currentdata, {[action.sourceId] : addData(currentdata[action.sourceId], action)});
-	
+
+
+const flatten = (layout)=>{
+	return layout.reduce((acc, row)=>{
+		return row.reduce((acc, src)=>{
+			acc.push(src);
+			return acc;
+		}, acc);
+	}, [])
 }
-const insert_old = (currentdata, action)=>{
-	currentdata = currentdata || [];
+
+//purge any sources that do not exist in the current layout for this app;
+const purge =  (state, action)=>{
 	
-	const index = indexFor(currentdata, action.sourceId); 
+	const sources = flatten(action.layout);
 	
-	if (index == -1){
-		return [...currentdata, addData(currentdata, action)];
-	}else{
-		return [...currentdata.slice(0, index), addData(currentdata[index], action), ...currentdata.slice(index+1)];
-	}	
+	if (!state[action.id]){
+		return state;
+	}
+	
+	return Object.assign({}, state[action.id], {[action.id] : Object.keys(state[action.id]).reduce((acc, srckey)=>{
+		if (sources.indexOf(srckey) != -1){
+			acc[srckey] = state[action.id][srckey]; //copy across!
+		}
+		return acc;
+	},{})});	
+}
+
+const insert = (state, action)=>{
+	const currentdata = state[action.id] || {};
+	return Object.assign({}, currentdata, {[action.sourceId] : addData(currentdata[action.sourceId], action)});	
 }
 
 const addData = (currentdata, action) =>{
-	
 	
 	if (action.view === "gauge"){
 		return gauge(currentdata,action);
@@ -105,10 +129,14 @@ export default function apps(state = {}, action) {
 	  		return acc;
 	  	},{})
 	  
-	  	
+	  
+	  //purge any apps that don't exist in layout...
+	  
 	  case APP_MESSAGE:
+	  
+	  	
 	  	return Object.assign({}, state, {
-	  										[action.id] : insert(state[action.id], action),
+	  										[action.id] : insert(purge(state, action), action),
 	  									});
 	  
 
