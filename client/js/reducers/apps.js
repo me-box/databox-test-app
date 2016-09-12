@@ -1,16 +1,4 @@
-import { APP_MESSAGE, APP_REMOVED } from '../constants/ActionTypes';
-
-
-function _contains(id, layout){
-	for (let i = 0; i < layout.length; i++){
-		for (let j = 0; j < layout[i].length; j++){
-			if (layout[i][j] === id)
-				return true;
-		}
-	}
-	return false;
-}
-
+import { APP_MESSAGE, APP_REMOVED, APP_RESET} from '../constants/ActionTypes';
 
 const addGaugeData = (state, action) =>{
 	switch (action.type){
@@ -82,7 +70,9 @@ const flatten = (layout)=>{
 
 //purge any sources that do not exist in the current layout for this app;
 const purge =  (state, action)=>{
-	
+	if (!action.layout)
+		return state;
+		
 	const sources = flatten(action.layout);
 	
 	if (!state[action.id]){
@@ -120,6 +110,9 @@ const addData = (currentdata, action) =>{
 export default function apps(state = {}, action) {
   	switch (action.type) {
 	  
+	  case APP_RESET:
+	  	return {};
+	  	
 	  case APP_REMOVED:
 	  	
 	  	return Object.keys(state).reduce((acc, key)=>{

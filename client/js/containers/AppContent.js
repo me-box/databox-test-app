@@ -46,9 +46,10 @@ class AppContent extends Component {
 			width: `calc(100vw - 5px)`,
 		}
 
+	
+		
 		const { apps, layout, dispatch, dimensions } = this.props;
 		const {w,h} = dimensions;
-		
 		const height = h - (HEADER_TOOLBAR_HEIGHT+FOOTER_TOOLBAR_HEIGHT);
 		
 		const totalrows = layout ? Object.keys(layout).length : 1;
@@ -60,16 +61,17 @@ class AppContent extends Component {
 	        
 	        return Object.keys(approw).map((sourcekey,j)=>{
 	    		
-	    		const {row,col} = lookup(layout[appkey],sourcekey);
+	    		const {row,col} = layout ? lookup(layout[appkey],sourcekey) : {row:i, col:j};
 	    		
 	    		//console.log(`for app ${appkey}, source:${sourcekey} row is ${row} col is ${col}`);
 	    	
 	    		
 	    		const app = approw[sourcekey];
-	    		const totalcols = layout[appkey][row].length;
+	    		const totalcols = layout  && layout[appkey] && layout[appkey][row] ? layout[appkey][row].length : Object.keys(approw).length;
+	    		//console.log(`total cols is ${totalcols}`);
 	    		//console.log(`total cols for app ${appkey}, source:${sourcekey} are ${totalcols} and total rows are ${layout[appkey].length}`); 
 	    		
-	    		const APPHEIGHT =  (APPCONTAINERHEIGHT - APP_TITLEBAR_HEIGHT) / layout[appkey].length; 
+	    		const APPHEIGHT =  (APPCONTAINERHEIGHT - APP_TITLEBAR_HEIGHT) / (layout && layout[appkey] ? layout[appkey].length : totalrows); 
 	    		
 	    		//console.log(`APPCONTAINERHEIGHT IS ${APPCONTAINERHEIGHT} APPHEIGHT = ${APPHEIGHT}`);
 	    		

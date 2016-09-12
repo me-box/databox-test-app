@@ -1,6 +1,6 @@
-import { APP_MESSAGE, APP_REMOVED } from '../constants/ActionTypes';
+import { APP_MESSAGE, APP_REMOVED, APP_RESET } from '../constants/ActionTypes';
 
-export default function layout(state = {}, action) {
+export default function layout(state = null, action) {
   	switch (action.type) {
 	  
 	  case APP_REMOVED:
@@ -11,10 +11,14 @@ export default function layout(state = {}, action) {
 	  		return acc;
 	  	},{})
 	  	
+	  case APP_RESET:
+	  	return null;
 	  	
 	  case APP_MESSAGE:
-	  	return  Object.assign({}, state, {[action.id]:action.layout});
-	  									
+	  	if (action.layout){
+	  		return  Object.assign({}, state, {[action.id]:action.layout});
+	  	}
+	  	return state;								
 	  
 	  default:
 	    return state;

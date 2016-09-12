@@ -1,4 +1,4 @@
-import { APP_REMOVED, APP_MESSAGE } from '../constants/ActionTypes';
+import { APP_REMOVED, APP_MESSAGE, APP_RESET } from '../constants/ActionTypes';
 
 export function appRemoved(appId) {
   return {
@@ -7,9 +7,16 @@ export function appRemoved(appId) {
   };
 }
 export function newMessage(msg) {
-
-  console.log("got new message");
-  console.log(msg);
+ 
+  if (!msg)
+  	return;
+  	
+  if (msg.type === "control" && msg.payload.command==="reset"){
+  	return {
+  		type: APP_RESET,
+  	}
+  }
+  
   const {sourceId, payload, layout} = msg;
   const {id, name, view, data} = payload;
   

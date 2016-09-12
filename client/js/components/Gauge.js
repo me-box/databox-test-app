@@ -36,12 +36,13 @@ export default class Gauge extends Component {
 
         const STROKEWIDTH      = 80;
         const OUTERSTROKEWIDTH = 5;
-
+		
         const lines = data.data.map((items,i)=>{
             const props = {...this.props, data:items, MIN: data.min, MAX: data.max, STROKEWIDTH:STROKEWIDTH, OUTERSTROKEWIDTH:OUTERSTROKEWIDTH}
             return <Line key={i} {...props} p={ (STROKEWIDTH*i*2) + OUTERSTROKEWIDTH} />
         });
 
+		
         return <svg width={w} height={h}>
                   {lines}
                 </svg>
@@ -79,12 +80,12 @@ class Line extends Component {
       }
 
       const PADDING = p + OUTERSTROKEWIDTH;
-      const TOPPADDINGWIDE = 10;
-      const r = h > (w/2) ? (w-PADDING-STROKEWIDTH)/2 : (h-TOPPADDINGWIDE-STROKEWIDTH/2);
+      const TOPPADDINGWIDE = p+ 10;
+      const r = h > (w/2) ? (w-PADDING-STROKEWIDTH)/2 : (h-(p/2)-(STROKEWIDTH/2));
 
-      const x1 = (r) => (w- (2*r))/2;
-      const x2 = (r) => w - (w- (2*r))/2;
-      const d = (r)=>`M ${x1(r)} ${h} A ${r},${r} 0 0,1 ${x2(r)} ${h}`
+      const x1 = r => (w- (2*r))/2;
+      const x2 = r => w - (w- (2*r))/2;
+      const d  = r =>`M ${x1(r)} ${h} A ${r},${r} 0 0,1 ${x2(r)} ${h}`
 
       if (MIN == MAX){
          MIN = MAX-1;
