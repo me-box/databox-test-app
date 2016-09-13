@@ -8,8 +8,10 @@ import {textWidth} from '../utils/utils';
 
 const colours = ["#1f77b4","#ff7f0e","#2ca02c","#d62728","#9467bd","#8c564b","#e377c2","#7f7f7f","#bcbd22","#17becf"];
 const lookup = [];
+const keylookup = {};
 
 const _colourFor = (id)=>{
+	
 	let index = lookup.indexOf(id);
 
   	if (index === -1){
@@ -41,6 +43,7 @@ class BarChart extends Component {
 	render(){
 	
 		const {w, h, data} = this.props;
+		
 		let {options} = this.props;
 		options = options || {};
 		
@@ -178,7 +181,50 @@ class BarChart extends Component {
 						{label}
 					 </div>
 		});
+		
+		let maxkeylen = 0;
+		
+		const ids = data.reduce((acc,item)=>{
+			acc[item.id] = textWidth(item.id, {size:"16px"})
+			maxkeylen = Math.max(maxkeylen, acc[item.id]);
+			return acc;
+		},{});
+		
+		
+		
+		const KEYRADIUS = 8;
+		
+		const keys = Object.keys(ids).sort().map((key, i)=>{
+			const circleprops = {
+				cx: CHARTWIDTH -  maxkeylen - KEYRADIUS - 5,
+				cy: TOPPADDING + (i * (KEYRADIUS*3)),
+				r: KEYRADIUS,
+			}
+			
+			const circlestyle ={
+				fill: _colourFor(key),
+				filter: 'url(#shadow)',
+			}
+			
+			const textprops = {
+				x: CHARTWIDTH -  maxkeylen,
+				y: TOPPADDING + KEYRADIUS/2 + (i * (KEYRADIUS*3)),
+				//textAnchor: 'middle',
+			}
+			
+			const textstyle ={
+				fill: 'white',
+				
+			}
+			
+			return <g>
+						<circle key={i} {...circleprops} style={circlestyle}/>
+				   		<text {...textprops} style={textstyle}>{key}</text>
+				   </g>
+		});
 
+		console.log(keys);
+		
 		const linestyle = {
 		  stroke: "#d4d4d4",
 		  strokeWidth: '1px',
@@ -188,6 +234,7 @@ class BarChart extends Component {
 		  stroke: "#fff",
 		  strokeWidth: '1px',
 	 	  fill: "#37474f",
+	 	  
 		}
 		const ticks = [...Array(TICKCOUNT+1).fill(0)].map((v,tick)=>{
 
@@ -319,7 +366,38 @@ class BarChart extends Component {
                   {xlabels}
                   {ylabels}
                   <svg width={CHARTWIDTH} height={CHARTHEIGHT}>
-                    
+                     <defs>
+                       <filter id="shadow">
+                          <feFlood
+                             floodOpacity="0.498039"
+                             floodColor="rgb(0,0,0)"
+                             result="flood"
+                              />
+                          <feComposite
+                             in="flood"
+                             in2="SourceGraphic"
+                             operator="in"
+                             result="composite1"
+                            />
+                          <feGaussianBlur
+                             in="composite1"
+                             stdDeviation="1.4"
+                             result="blur"
+                             />
+                          <feOffset
+                             dx="1.5"
+                             dy="2.85882e-15"
+                             result="offset"
+                             />
+                          <feComposite
+                             in="SourceGraphic"
+                             in2="offset"
+                             operator="over"
+                             result="composite2"
+                             />
+                        </filter>
+                    </defs>
+
                     <g>
                      
                       {yaxis}
@@ -328,7 +406,7 @@ class BarChart extends Component {
                       {ticks}
                       {readings}
                       {MIN > 0 && xaxis}
-                      
+                      {keys}
                      
                     </g>
                   </svg>
