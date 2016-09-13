@@ -5,13 +5,13 @@ const addGaugeData = (state, action) =>{
 
 		case APP_MESSAGE:
 			
-			const idx = state.data.map(t=>{return t[0].id}).indexOf(action.data.id);
+			const idx = state.data.map(t=>{return t[0].id}).indexOf(action.values.id);
 
 			if (idx == -1){
-				return [...state.data, [action.data]]
+				return [...state.data, [action.values]]
 			}
 			
-			const newdata = [state.data[idx][state.data[idx].length-1], action.data];
+			const newdata = [state.data[idx][state.data[idx].length-1], action.values];
 			return [...state.data.slice(0,idx), newdata, ...state.data.slice(idx+1)];
 			return state;
 			
@@ -21,25 +21,26 @@ const addGaugeData = (state, action) =>{
 }
 
 const append = (state = {data:[]}, action)=>{
-	return (Object.assign({}, ...state, {data: [...state.data || [], action.data], view:action.view, sourceId: action.sourceId, id: action.id, name: action.name}));
+	return (Object.assign({}, ...state, {data: [...state.data || [], action.values], options: action.options, view:action.view, sourceId: action.sourceId, id: action.id, name: action.name}));
 }
 
 const replace = (state = {data:{}}, action)=>{
-	return (Object.assign({}, ...state, {data: action.data, view: action.view, sourceId: action.sourceId, id:action.id, name:action.name}));
+	return (Object.assign({}, ...state, {data: action.values, options: action.options, view: action.view, sourceId: action.sourceId, id:action.id, name:action.name}));
 }
 
 const gauge = (state = {data:[], min:999999, max:-999999}, action)=>{
   
   switch (action.type) {
   	case APP_MESSAGE:
-  		if (action.data.type === "data"){ //TODO HANDLE INIT TYPES!
+  		if (action.values.type === "data"){ //TODO HANDLE INIT TYPES!
     		return Object.assign({}, ...state, {	data: addGaugeData(state, action),
+    												options: action.options,
 													view: action.view,
 													id: action.id,
 													sourceId: action.sourceId,
 													name: action.name,
-													min:  Math.min(Number(action.data.x), state.min),
-													max:  Math.max(Number(action.data.x), state.max),
+													min:  Math.min(Number(action.values.x), state.min),
+													max:  Math.max(Number(action.values.x), state.max),
     									    });
     	}
     	return state;

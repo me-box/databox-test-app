@@ -27,16 +27,19 @@ class App extends Component {
 		const networkprops = {
      	 	status,
     	}
+    	
+    	//<HeaderMenu/>
+    	//<FooterMenu/>
 
 	    return (<div>
 	    			<NetworkStatus {...networkprops}/>
 			    	<div className="container">
 			    		<div className="column">
-			    			<HeaderMenu/>
+			    			
 			    			<div>
 			    				{this.props.children}
 			    			</div>
-			    			<FooterMenu/>
+			    			
 			    		</div>
 			    	</div>
 			    </div>

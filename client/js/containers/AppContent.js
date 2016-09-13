@@ -87,9 +87,9 @@ class AppContent extends Component {
 			
 				let dataview = null;
 			
-				const data = app.data;
+				const {options,data} = app;
 			
-			
+				
 				switch (app.view){	
 				
 					case 'gauge':
@@ -97,23 +97,23 @@ class AppContent extends Component {
 						break;
 					
 					case 'bar':
-						let [config, ...values] = data;
-						dataview = 	<Chart {...{w: APPWIDTH, h: APPHEIGHT, config: config, data: values.slice(-MAXREADINGS)}} /> 	
+					
+						dataview = 	<Chart {...{w: APPWIDTH, h: APPHEIGHT, options: options, data: data.slice(-MAXREADINGS)}} /> 	
 						break;
 					
 					case 'text':
-						dataview = <FittedText {...{w:APPWIDTH,h:APPHEIGHT, data:data || ""}} />;
+						dataview = <FittedText {...{w:APPWIDTH,h:APPHEIGHT, data: data || ""}} />;
 						break;
 								
 					case 'list':
 					
 						if (data === Object(data)){ //if this is a valid javascript object
-					
-							data.keys = data.keys || [];
-							data.rows = data.rows || [];
-							const props = {keys: data.keys, rows: data.rows};
+							const props = {keys: data.keys || [], rows: data.rows || []};
+							console.log("props are");
+							console.log(props);
 							dataview = <List {...props}/>
-								  
+						}else{
+							console.log("NOT R+CREATYEING LIST");
 						}
 						break;
 			

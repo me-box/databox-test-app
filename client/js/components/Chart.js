@@ -28,9 +28,9 @@ class Chart extends Component {
 	
 	render() {
 		
-		let {w, h, config, options, data} = this.props;
-		
-		return 	<BarChart {...{w:w, h:h, config:config, options:options, data:data}} />
+		const {w, h, options, data} = this.props;
+	
+		return 	<BarChart {...{w, h, options,data}} />
 				
 	}
 };
@@ -40,8 +40,9 @@ class BarChart extends Component {
 	
 	render(){
 	
-		const {w, h, config, data} = this.props;
-		
+		const {w, h, data} = this.props;
+		let {options} = this.props;
+		options = options || {};
 		
 		if (data.length <= 0){
 			return null;
@@ -173,7 +174,7 @@ class BarChart extends Component {
 				textAlign: 'left',
 			  }
 
-			  return <div key={`${item.id}${item.x}`} style={style}>
+			  return <div key={`${item.id} ${item.dataid}`} style={style}>
 						{label}
 					 </div>
 		});
@@ -255,7 +256,7 @@ class BarChart extends Component {
 								
 							}
 		  
-		  return <rect key={`${item.id}${item.x}`} className="animated" style={style} {...rectprops} />
+		  return <rect key={`${item.id} ${item.dataid}`} className="animated" style={style} {...rectprops} />
   
   
 
@@ -310,8 +311,8 @@ class BarChart extends Component {
       	  return (
             <div>
                
-                <div style={yLabelStyle}>temperature (degrees celcius)</div>
-                  <div style={xLabelStyle}>time (hh:mm:ss) </div>
+                <div style={yLabelStyle}>{options.ylabel || ""}</div>
+                  <div style={xLabelStyle}>{options.xlabel || ""}</div>
                   <div style={{position:'absolute', top:TOPPADDING, left:LEFTPADDING}}>
                   {ymin}
                   {ymax}
