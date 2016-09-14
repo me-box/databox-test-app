@@ -62,6 +62,10 @@ app.get('/', ensureAuthenticated, function(req,res){
   res.render('index');
 });
 
+app.get('/login', function(req,res){
+	res.render('login');	
+});
+
 app.use('/auth', require('./routes/auth'));
 app.use('/comms',ensureAuthenticated, require('./routes/comms'));
 

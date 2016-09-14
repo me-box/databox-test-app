@@ -93,7 +93,7 @@ class AppContent extends Component {
 				switch (app.view){	
 				
 					case 'gauge':
-						dataview = 	<Gauge {...{w: APPWIDTH, h: APPHEIGHT, data: app}} /> 	
+						dataview = 	<Gauge {...{w: APPWIDTH, h: APPHEIGHT, options: options, data: app}} /> 	
 						break;
 					
 					case 'bar':

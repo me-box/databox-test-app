@@ -203,7 +203,9 @@ class BarChart extends Component {
 			
 			const circlestyle ={
 				fill: _colourFor(key),
-				filter: 'url(#shadow)',
+				stroke: "#37474f",
+				strokeWidth: "2px",
+				//filter: 'url(#shadow)',
 			}
 			
 			const textprops = {

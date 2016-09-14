@@ -29,16 +29,27 @@ export default class Gauge extends Component {
   
     render(){
 
-        const {w,h,data} = this.props;
+        const {w,h,options, data} = this.props;
+        
         
         if (data.data.length < 0 )
           return null;
 
         const STROKEWIDTH      = 80;
         const OUTERSTROKEWIDTH = 5;
+		let {min,max} = data;
+		
+		
+		if (options && "min" in options){
+			min = options.min;
+		}
+		
+		if (options && "max" in options){
+			max = options.max;
+		}
 		
         const lines = data.data.map((items,i)=>{
-            const props = {...this.props, data:items, MIN: data.min, MAX: data.max, STROKEWIDTH:STROKEWIDTH, OUTERSTROKEWIDTH:OUTERSTROKEWIDTH}
+            const props = {...this.props, data:items, MIN: min, MAX: max, STROKEWIDTH:STROKEWIDTH, OUTERSTROKEWIDTH:OUTERSTROKEWIDTH}
             return <Line key={i} {...props} p={ (STROKEWIDTH*i*2) + OUTERSTROKEWIDTH} />
         });
 
@@ -55,7 +66,7 @@ class Line extends Component {
 
      
 
-      let {MIN,MAX,data,w,h,p, STROKEWIDTH, OUTERSTROKEWIDTH} = this.props;
+      let {MIN,MAX,data,options,w,h,p, STROKEWIDTH, OUTERSTROKEWIDTH} = this.props;
 	  
       const TICKCOUNT = 10;
       const _TICKCOUNT = TICKCOUNT + 1;
