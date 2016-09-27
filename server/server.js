@@ -9,6 +9,7 @@ import mqttinit from './comms/mqtt';
 import request from 'superagent';
 import initPassport from './strategies';
 import mongoose from 'mongoose';
+import ipcinit from './comms/ipc';
 
 mongoose.connect(config.mongo.url);
 const RedisStore 	 = connectredis(expressSession);
@@ -56,7 +57,8 @@ const ensureAuthenticated = (req, res, next) => {
 
 
 websocketinit(['databox'],server);
-mqttinit();
+//mqttinit();
+ipcinit();
 
 app.get('/', ensureAuthenticated, function(req,res){
   res.render('index');

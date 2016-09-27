@@ -128,6 +128,7 @@ export default function apps(state = {}, action) {
 	  
 	  case APP_MESSAGE:
 	  
+	  	
 	  	return Object.assign({}, state, {
 	  										[action.id] : insert(purge(state, action), action),
 	  									});

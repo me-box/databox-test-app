@@ -1,5 +1,4 @@
 #!/bin/sh
-#!/bin/sh
 mkdir -p /tmp/databoxpids
 
 echo "starting dev server..."
