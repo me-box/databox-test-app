@@ -25,8 +25,6 @@ const degrees = (radians)=>{
     return radians * (180/Math.PI);
 }
 
-
-
 export default class Gauge extends Component {
   
     render(){
@@ -56,12 +54,26 @@ export default class Gauge extends Component {
             return <Line key={i} {...props} p={ (STROKEWIDTH*i*2) + OUTERSTROKEWIDTH} />
         });
         
-        
-        const labels = [{value:10, text: "one"}, {value:40, text: "two"}, {value:60, text: "three"}, {value:80, text: "four"}, {value:max, text: "five"}];
-        const markers = labels.reverse().map((marker,i)=>{
+        let labels = [];
+        if (options.labels){
+        	var labelarray = options.labels.split(",");
+        	labels = labelarray.reduce((acc, label)=>{
+        		const [name,value] = label.split(":");
+        		if (name && value){
+        			if (!isNaN(parseFloat(value)) && isFinite(value)){
+        				acc.push({value:value, text:name});
+        			}
+        		}
+        		return acc;
+        	},[]);
+        }
+       
+		const markers = labels.map((marker)=>{
+			marker.value = Math.min(Math.max(min, marker.value),max);
+			return marker;
+		}).map((marker,i)=>{
         	
-        	const previous = i < labels.length - 1 ? labels[i+1].value : min;
-        	const delta    = (marker.value - previous) / 2;
+        	const from  = (i == 0) ? min : labels[i-1].value;
         	
         	const markerprops = {
         		STROKEWIDTH,
@@ -71,14 +83,15 @@ export default class Gauge extends Component {
         		min,
         		w,
         		h,
-        		value: marker.value,
-        		center: previous + delta,
+        		from: from,
+        		to: marker.value,
         		text: marker.text,
         	}
         	
         	return <Marker {...markerprops}/>
         });
-
+        
+        
 		const TITLESIZE = 30;
 		const textstyle = {
                               textAnchor:"middle",
@@ -93,57 +106,71 @@ export default class Gauge extends Component {
                                 y:h-r-TITLESIZE-APP_TITLEBAR_HEIGHT,
         }
 		
-        return <svg width={w} height={h}>              
+		const outerpath = `M ${0} ${h} A ${r},${r} 0 0,1 ${w} ${h}`;
+		const arcstyle = {
+         fill: 'none',
+         stroke: '#4d4d4d',
+         strokeOpacity: 1.0,
+         strokeWidth: `4px`,
+      }
+        return <svg width={w} height={h}>  
+        	 	
+        	 	   
                  {lines}
                  <g><text style={textstyle} {...textprops}> {options.title || ""} </text></g>
-                 {markers}
+                 <path style={arcstyle} d={outerpath}/>  
+                  {markers}      
                 </svg>
     }
 }
+
 
 class Marker extends Component {
 	
 	render(){
 	 
-	  const {STROKEWIDTH, OUTERSTROKEWIDTH, BORDERPADDING,  max, min, w, h, value, center, text} = this.props;
+	  const {STROKEWIDTH, OUTERSTROKEWIDTH, BORDERPADDING,  max, min, w, h, from, to, center, text} = this.props;
 	  
 	  const PADDING = OUTERSTROKEWIDTH;
 	  const FONTSIZE = 30;
 	  
-      //const r = h > (w/2) ? (w-PADDING)/2 : (h);
-
       const r = h > (w/2) ? (w-PADDING-STROKEWIDTH)/2 + BORDERPADDING - OUTERSTROKEWIDTH : (h-(STROKEWIDTH/2) - OUTERSTROKEWIDTH);
-
-	  const x1 = r => (w- (2*r))/2;
-      const x2 = r => w - (w- (2*r))/2;
-      const d  = r =>`M ${x1(r)} ${h} A ${r},${r} 0 0,1 ${x2(r)} ${h}`
 	 
 	  const angle = (value)=>{
         const divisor = max-min;
         return Math.PI - radians((value - min)  * (180/divisor));
       }
       
-      const theta = angle(value);
-
+      
+	  const ADJUST = 0;
+	   
       const ypos = (value)=>{
-        return h - (r * Math.sin(theta));
+        return h - ((r-ADJUST) * Math.sin(angle(value)));
       }
 
       const xpos = (value)=>{
-        return w/2 + (r * Math.cos(theta));
+        return w/2 + ((r-ADJUST) * Math.cos(angle(value)));
       }
 	
 	  const markerstyle = {
-         fill: 'white',
+         fill: 'red',
          fillOpacity: 1.0,
          stroke: '#4d4d4d',
          strokeOpacity: 1.0,
          strokeWidth: '3px',
 	  }
 	  
-	  const fromr = r-BORDERPADDING/2;
-	  const tor = r+BORDERPADDING/2;
+	  const markerstyle2 = {
+         fill: 'green',
+         fillOpacity: 1.0,
+         stroke: '#4d4d4d',
+         strokeOpacity: 1.0,
+         strokeWidth: '3px',
+	  }
 	  
+	  const fromr = r-BORDERPADDING/2-ADJUST;
+	  const tor = r+BORDERPADDING/2-ADJUST;
+	  const theta = angle(from);
 	  const lineprops = {
 		  x1:w/2 + (fromr * Math.cos(theta)),
 		  y1: h - (fromr * Math.sin(theta)),
@@ -157,40 +184,42 @@ class Marker extends Component {
          strokeWidth: `3px`,
      }
 	
-	 const textstyle = {
-        textAnchor:"middle",
-        fill: 'white',
-        fontSize: `${FONTSIZE}px`,
-     }
-
-	 const labelr = r - (BORDERPADDING/2) + 5
-	 
-	 const texttheta = angle(center);
-     const textprops = {
-        x:0,
-        y:0,
-        transform: `translate(${w/2 + (labelr * Math.cos(texttheta))}, ${h -(labelr * Math.sin(texttheta))}) rotate(${90-degrees(texttheta)})`,
-      }
-      
-       const arcstyle = {
+		  
+    const arcstyle = {
          fill: 'none',
          stroke: _colourFor(text),
          strokeOpacity: 1.0,
          strokeWidth: `${BORDERPADDING}px`,
-      }
+    }
       
-      
-	const xval = xpos(value);
-	const yval = ypos(value);
-    const path = `M ${x1(r)} ${h} A ${r},${r} 0 0,1 ${xval} ${yval}`;
-    /*<circle style={markerstyle} r={10} cx={xpos(value)} cy={ypos(value)} />*/
     
+	const xs = xpos(from);
+	const xe = xpos(to);
+	const ys = ypos(from); 
+	const ye = ypos(to);
+	
+	
+ 	const path = `M ${xs} ${ys} A ${r-ADJUST},${r-ADJUST} 0 0,1 ${xe} ${ye}`;
+	const labelr = r - (BORDERPADDING/2) + 5;
+	const texttheta = angle(from + ((to-from) / 2));
+	
+	const textstyle = {
+        textAnchor:"middle",
+        fill: 'white',
+        fontSize: `${FONTSIZE}px`,
+    }
+    
+    const textprops = {
+        x:0,
+        y:0,
+        transform: `translate(${w/2 + (labelr * Math.cos(texttheta))}, ${h -(labelr * Math.sin(texttheta))}) rotate(${90-degrees(texttheta)})`,
+    } 
+      
     return  	<g>
-	  								
 	  				
 	  				<path style={arcstyle} d={path}/>
-	  				<line style={linestyle} {...lineprops} />  
 	  				<text style={textstyle} {...textprops}>{text}</text>
+	  				<line style={linestyle} {...lineprops} />  
 	  			</g>
 	
 	}
