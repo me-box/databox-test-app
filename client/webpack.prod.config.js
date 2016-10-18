@@ -1,6 +1,6 @@
 var path = require("path");
 var webpack = require("webpack");
-
+var config = require("./js/config");
 module.exports = {
     entry: {
         app: './js/app.js'
@@ -9,7 +9,7 @@ module.exports = {
     output: {
 
         path: __dirname + "/static",
-        publicPath: 'http://databoxtest.upintheclouds.org',
+        publicPath: config.root,
         filename: '[name].js'
     },
 

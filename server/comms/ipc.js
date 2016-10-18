@@ -12,7 +12,7 @@ export default function init(){
             ipc.server.on(
                 'message',
                 function(data,socket){
-                    //ipc.log('got a message : '.debug, data);
+                    ipc.log('got a message : '.debug, data);
                     const msg = JSON.parse(data.toString());
 					console.log(msg);
 					const channel = msg.channel; //this is set to the user's github acc name
