@@ -5,7 +5,7 @@ import * as InstallerActions from '../actions/InstallerActions';
 import {HEADER_TOOLBAR_HEIGHT, FOOTER_TOOLBAR_HEIGHT} from '../constants/ViewConstants';
 import '../../style/font-awesome/css/font-awesome.min.css';
 
-export default class Installer extends Component {
+class Installer extends Component {
 	
 	constructor(props){
 		super(props);
