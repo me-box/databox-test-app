@@ -1,12 +1,11 @@
 import React, { Component } from 'react';
-import HeaderMenu from './HeaderMenu';
-import FooterMenu from './FooterMenu';
 import '../../style/sass/style.scss';
 import NetworkStatus from '../components/NetworkStatus';
 import {connect} from 'react-redux';
 import {windowResize} from '../actions/WindowActions';
 import { bindActionCreators } from 'redux';
 import '../../style/font-awesome/css/font-awesome.min.css';
+import {fetchChannelId} from '../actions/ChannelActions';
 
 class App extends Component {
 	
@@ -18,6 +17,7 @@ class App extends Component {
 	
 	componentDidMount(){
   		window.addEventListener('resize', this._handleResize);
+  		this.props.dispatch(fetchChannelId());
 	}
 
 	render() {
@@ -28,9 +28,6 @@ class App extends Component {
      	 	status,
     	}
     	
-    	//<HeaderMenu/>
-    	//<FooterMenu/>
-
 	    return (<div>
 	    			<NetworkStatus {...networkprops}/>
 			    	<div className="container">

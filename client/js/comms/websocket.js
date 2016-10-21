@@ -1,5 +1,5 @@
 import io from 'socket.io-client';
-import {newMessage} from '../actions/AppActions';
+import {newMessage, debugMessage} from '../actions/AppActions';
 
 export default function init(namespace, appId, dispatch) {
   
@@ -12,6 +12,10 @@ export default function init(namespace, appId, dispatch) {
 
   socket.on("message", function(data){
     dispatch(newMessage(data));
+  });
+  
+  socket.on("debug", function(data){
+    dispatch(debugMessage(data));
   });
 
 };

@@ -9,10 +9,8 @@ import List from '../components/List';
 import Chart from '../components/Chart';
 import Gauge from '../components/Gauge';
 import FittedText from '../components/FittedText';
-
 import {MAXREADINGS} from '../constants/ChartConstants';
 import * as AppActions from '../actions/AppActions';
-import {fetchChannelId} from '../actions/ChannelActions';
 
 
 function lookup(boxes, name){
@@ -35,7 +33,6 @@ class AppContent extends Component {
 	} 
 	
 	componentDidMount(){
-		this.props.dispatch(fetchChannelId());
   		window.addEventListener('resize', this._handleResize);
 	}
 
@@ -45,9 +42,7 @@ class AppContent extends Component {
 			height: `calc(100vh - ${HEADER_TOOLBAR_HEIGHT+FOOTER_TOOLBAR_HEIGHT}px)`,
 			width: `calc(100vw - 5px)`,
 		}
-
 	
-		
 		const { apps, layout, dispatch, dimensions } = this.props;
 		const {w,h} = dimensions;
 		const height = h - (HEADER_TOOLBAR_HEIGHT+FOOTER_TOOLBAR_HEIGHT);
@@ -73,7 +68,7 @@ class AppContent extends Component {
 	    		
 	    		const APPHEIGHT =  (APPCONTAINERHEIGHT - APP_TITLEBAR_HEIGHT) / (layout && layout[appkey] ? layout[appkey].length : totalrows); 
 	    		
-	    		//console.log(`APPCONTAINERHEIGHT IS ${APPCONTAINERHEIGHT} APPHEIGHT = ${APPHEIGHT}`);
+	    		
 	    		
 	    		const APPWIDTH  = (w/totalcols);
 	    		
@@ -91,7 +86,14 @@ class AppContent extends Component {
 			
 				
 				switch (app.view){	
-				
+					
+					case 'html':
+					
+						dataview = <div style={{width:w, height:h}}>
+								   		<div dangerouslySetInnerHTML={{__html: data.payload}}></div>
+								   </div>
+						break;
+						
 					case 'gauge':
 						dataview = 	<Gauge {...{w: APPWIDTH, h: APPHEIGHT, options: options, data: app}} /> 	
 						break;
@@ -109,11 +111,7 @@ class AppContent extends Component {
 					
 						if (data === Object(data)){ //if this is a valid javascript object
 							const props = {keys: data.keys || [], rows: data.rows || []};
-							console.log("props are");
-							console.log(props);
 							dataview = <List {...props}/>
-						}else{
-							console.log("NOT R+CREATYEING LIST");
 						}
 						break;
 			

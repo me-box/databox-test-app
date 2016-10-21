@@ -1,4 +1,11 @@
-import { APP_REMOVED, APP_MESSAGE, APP_RESET } from '../constants/ActionTypes';
+import { APP_REMOVED, APP_MESSAGE, APP_RESET, DEBUG_MESSAGE,  DEBUG_TOGGLE_PAUSE } from '../constants/ActionTypes';
+
+
+export function togglePause(){
+	return {
+		type: DEBUG_TOGGLE_PAUSE,
+	}
+}
 
 export function appRemoved(appId) {
   return {
@@ -6,6 +13,15 @@ export function appRemoved(appId) {
     appId,
   };
 }
+
+
+export function debugMessage(data){
+	return {
+		type: DEBUG_MESSAGE,
+		data
+	}
+}
+
 export function newMessage(msg) {
  
   if (!msg)

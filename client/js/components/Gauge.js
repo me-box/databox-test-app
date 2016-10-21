@@ -50,8 +50,17 @@ export default class Gauge extends Component {
 		}
 		
         const lines = data.data.map((items,i)=>{
-            const props = {...this.props, data:items, MIN: min, MAX: max, STROKEWIDTH, OUTERSTROKEWIDTH, BORDERPADDING}
-            return <Line key={i} {...props} p={ (STROKEWIDTH*i*2) + OUTERSTROKEWIDTH} />
+            const props = {	...this.props, 
+            				data:items, 
+            				MIN: min, 
+            				MAX: max,
+            				p: (STROKEWIDTH*i*2) + OUTERSTROKEWIDTH, 
+            				STROKEWIDTH, 
+            				OUTERSTROKEWIDTH, 
+            				BORDERPADDING
+            				
+            				}
+            return <Line key={i} {...props} />
         });
         
         let labels = [];
@@ -60,14 +69,22 @@ export default class Gauge extends Component {
         	labels = labelarray.reduce((acc, label)=>{
         		const [name,value] = label.split(":");
         		if (name && value){
-        			if (!isNaN(parseFloat(value)) && isFinite(value)){
+        			
+        			
+        			if (value.trim() === "max"){
+        				acc.push({value:max, text:name});
+        			}
+        			else if (value.trim() === "min"){
+        				acc.push({value:min, text:name});
+        			}
+        			else if (!isNaN(parseFloat(value)) && isFinite(value)){
         				acc.push({value:value, text:name});
         			}
         		}
         		return acc;
         	},[]);
         }
-       
+        
 		const markers = labels.map((marker)=>{
 			marker.value = Math.min(Math.max(min, marker.value),max);
 			return marker;
@@ -91,7 +108,6 @@ export default class Gauge extends Component {
         	return <Marker {...markerprops}/>
         });
         
-        
 		const TITLESIZE = 30;
 		const textstyle = {
                               textAnchor:"middle",
@@ -99,26 +115,17 @@ export default class Gauge extends Component {
                               fontSize: TITLESIZE,
                        }
 		
-		const r = h > (w/2) ? (w-OUTERSTROKEWIDTH-STROKEWIDTH)/2 : (h-(STROKEWIDTH/2));
-        
+		//const r = h > (w/2) ? (w-OUTERSTROKEWIDTH-STROKEWIDTH)/2 : (h-(STROKEWIDTH/2));
+        const r = h > (w/2) ? (w-OUTERSTROKEWIDTH-STROKEWIDTH)/2 : (h-(STROKEWIDTH/2));
+       
         const textprops = {
                                 x:w/2,
                                 y:h-r-TITLESIZE-APP_TITLEBAR_HEIGHT,
         }
 		
-		const outerpath = `M ${0} ${h} A ${r},${r} 0 0,1 ${w} ${h}`;
-		const arcstyle = {
-         fill: 'none',
-         stroke: '#4d4d4d',
-         strokeOpacity: 1.0,
-         strokeWidth: `4px`,
-      }
         return <svg width={w} height={h}>  
-        	 	
-        	 	   
                  {lines}
                  <g><text style={textstyle} {...textprops}> {options.title || ""} </text></g>
-                 <path style={arcstyle} d={outerpath}/>  
                   {markers}      
                 </svg>
     }
@@ -134,7 +141,7 @@ class Marker extends Component {
 	  const PADDING = OUTERSTROKEWIDTH;
 	  const FONTSIZE = 30;
 	  
-      const r = h > (w/2) ? (w-PADDING-STROKEWIDTH)/2 + BORDERPADDING - OUTERSTROKEWIDTH : (h-(STROKEWIDTH/2) - OUTERSTROKEWIDTH);
+      const r = h > (w/2) ? (w-PADDING-STROKEWIDTH)/2 + BORDERPADDING - OUTERSTROKEWIDTH : (h-(STROKEWIDTH/2)) + BORDERPADDING - OUTERSTROKEWIDTH;
 	 
 	  const angle = (value)=>{
         const divisor = max-min;

@@ -22,7 +22,13 @@ module.exports = {
 	    		},
 	    		'/comms/*':{
 					target: 'http://localhost:9095',
-	    		}
+	    		},
+	    		'/apps/*':{
+	    			target: 'http://localhost:9095',
+	    		},
+	    		'/debug/*':{
+	    			target: 'http://localhost:9095',
+	    		},
         }
     },
 

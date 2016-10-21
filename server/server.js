@@ -48,6 +48,9 @@ if (process.argv.length > 2){
 
 
 const ensureAuthenticated = (req, res, next) => {
+  //req.user = {username:'tlodge'}
+  //return next(null);
+ 
   if (req.isAuthenticated()){
     return  next(null);
   }
@@ -76,4 +79,5 @@ app.use(function(req,res){
     res.redirect("/");
 });
 
+console.log("listening on port " + PORT);
 server.listen(PORT);

@@ -50,4 +50,7 @@
   text-align: center;
 }
 
-
+.row > div.fixed {
+ 	-webkit-flex: 0 0 auto;
+    flex: 0 0 auto;
+}
