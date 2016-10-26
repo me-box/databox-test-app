@@ -2,5 +2,6 @@
 bower_components
 node_modules
 npm-debug.log
+client/js/config.js
 server/static/app.js
 server/config.js

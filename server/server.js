@@ -5,7 +5,6 @@ import connectredis from 'connect-redis';
 import bodyparser from 'body-parser';
 import config from './config';
 import websocketinit from './comms/websocket';
-import mqttinit from './comms/mqtt';
 import request from 'superagent';
 import initPassport from './strategies';
 import mongoose from 'mongoose';
@@ -60,7 +59,6 @@ const ensureAuthenticated = (req, res, next) => {
 
 
 websocketinit(['databox'],server);
-//mqttinit();
 ipcinit();
 
 app.get('/', ensureAuthenticated, function(req,res){
