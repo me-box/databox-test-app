@@ -1,5 +1,5 @@
 import io from 'socket.io-client';
-import {newMessage, debugMessage} from '../actions/AppActions';
+import {newMessage, debugMessage, bulbMessage, pipstaMessage} from '../actions/AppActions';
 
 export default function init(namespace, appId, dispatch) {
   
@@ -16,6 +16,24 @@ export default function init(namespace, appId, dispatch) {
   
   socket.on("debug", function(data){
     dispatch(debugMessage(data));
+  });
+  
+  socket.on("bulbsout", function(data){
+  	dispatch(bulbMessage(data));
+  });
+  
+  socket.on("notify", function(data){
+  	console.log("notify message");
+  	console.log(data);
+  });
+  
+  socket.on("pipstaprint", function(data){
+	dispatch(pipstaMessage(data));
+  });
+  
+  socket.on("plugout", function(data){
+  	console.log("plugout message");
+  	console.log(data);
   });
 
 };

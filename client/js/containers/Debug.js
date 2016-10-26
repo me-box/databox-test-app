@@ -95,7 +95,7 @@ class Debug extends Component {
 	    	</div>
 	    );
 	  }
-	};
+};
 
 function select(state) {
   return {
