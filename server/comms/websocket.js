@@ -2,7 +2,6 @@ import socket from 'socket.io';
 let _namespaces = {};
 let connected = {};
 
-
 export default function init(nsps, server){
 
     const io = socket.listen(server);
@@ -36,6 +35,7 @@ export default function init(nsps, server){
       }
     });
 }
+
 
 export function sendmessages(rooms, namespace, event, message){
   rooms.forEach(function(room){

@@ -11,7 +11,10 @@ export default function init(namespace, appId, dispatch) {
   });
 
   socket.on("message", function(data){
-  	console.log("seen message");
+  	if (data && data.type==="control"){
+  	  	console.log("LEAVING CHANNEL " + data.payload.channel);
+  		socket.emit("leave", data.payload.channel);
+  	}
     dispatch(newMessage(data));
   });
   
