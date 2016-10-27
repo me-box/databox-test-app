@@ -38,6 +38,9 @@ export function pipstaMessage(data){
 
 export function newMessage(msg) {
  
+  console.log("seen message");
+  console.log(msg);
+  
   if (!msg)
   	return;
 
@@ -51,7 +54,9 @@ export function newMessage(msg) {
   const {sourceId, payload, layout} = msg;
   const {id, name, view, data} = payload;
   const {options, values} = data;
- 
+  console.log("values are");
+  console.log(values);
+  
   return {
     type: APP_MESSAGE,
     id,
