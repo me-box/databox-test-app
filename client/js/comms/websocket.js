@@ -21,7 +21,7 @@ export default function init(namespace, appId, dispatch) {
   	console.log(Date.now() - startconnect);
   	 
   	if (data && data.type==="control"){
-  		if ((Date.now() - startconnect) > 5000){
+  		if ((Date.now() - startconnect) > 8000){
   	  		console.log("LEAVING CHANNEL " + data.payload.channel);
   			socket.emit("leave", data.payload.channel);
   		}else{

@@ -89,8 +89,8 @@ class AppContent extends Component {
 					
 					case 'html':
 					
-						dataview = <div style={{width:w, height:h}}>
-								   		<div dangerouslySetInnerHTML={{__html: data}}></div>
+						dataview = <div>
+								   		<div style={{width:w, height:h}} dangerouslySetInnerHTML={{__html: data}}></div>
 								   </div>
 						break;
 						
