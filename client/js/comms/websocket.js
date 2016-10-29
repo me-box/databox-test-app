@@ -4,16 +4,29 @@ import {newMessage, debugMessage, bulbMessage, pipstaMessage} from '../actions/A
 export default function init(namespace, appId, dispatch) {
   
   const socket = io('/'+namespace, {path: '/socket.io'});
- 
+  let startconnect;
+  ///added a bit of a hack here to deal with a race condition.  It is possible that a new app has started
+  //running before an old one has completed.  When the old one completes it sends a reset, which the new
+  //one could then receive and unjoin the channel.  To fix we record the connect time and only disconnect if it
+  //is greater than 2 seconds.  TO FIX: create unique one-time channelIDs at deploy time
+  
   socket.on("connect", function(){
   	  console.log(`CALLING JOIN ON ${appId}`);
       socket.emit("join", appId);
+      startconnect = Date.now();
   });
 
   socket.on("message", function(data){
+  	
+  	console.log(Date.now() - startconnect);
+  	 
   	if (data && data.type==="control"){
-  	  	console.log("LEAVING CHANNEL " + data.payload.channel);
-  		socket.emit("leave", data.payload.channel);
+  		if ((Date.now() - startconnect) > 5000){
+  	  		console.log("LEAVING CHANNEL " + data.payload.channel);
+  			socket.emit("leave", data.payload.channel);
+  		}else{
+  			console.log("not leaving this channel as only just joined!");
+  		}
   	}
     dispatch(newMessage(data));
   });

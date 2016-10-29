@@ -24,7 +24,8 @@ export default function init(){
 	
 	ipc.config.id   = 'webserver';
     ipc.config.retry= 1500;
-       ipc.config.silent=true;
+       
+    ipc.config.silent=true;
  	console.log("-- INITED THE UNIX WEBSERVER IPC SOCKET!! --");
  	
  	try{
