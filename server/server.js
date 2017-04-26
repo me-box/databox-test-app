@@ -9,6 +9,7 @@ import request from 'superagent';
 import initPassport from './strategies';
 import mongoose from 'mongoose';
 import ipcinit from './comms/ipc';
+import {lookup} from './datastore';
 const MongoStore = connectmongostore(expressSession);
 mongoose.connect(config.mongo.url);
 
@@ -71,6 +72,18 @@ app.use('/comms',ensureAuthenticated, require('./routes/comms'));
 //redirect any failed routes to root
 app.use(function(req,res){
     res.redirect("/");
+});
+
+app.get('/ui/init/:id', function(req,res){
+
+  const result = lookup(req.params.id);
+
+  if (result){
+    res.send({success:true, init:result});
+  }
+  else{
+    res.send({success:false});
+  }
 });
 
 console.log("listening on port " + PORT);
