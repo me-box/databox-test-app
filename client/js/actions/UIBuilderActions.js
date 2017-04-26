@@ -167,6 +167,8 @@ export function init(id){
 			}else{
 			
 			  	dispatch(networkSuccess(`successfully inited!`));
+				console.log(res.body);
+
 				if (res.body.init){
 					const {templates, mappings, transformers} = res.body.init;
 					console.log("*******************");

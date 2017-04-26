@@ -69,12 +69,6 @@ app.get('/login', function(req,res){
 app.use('/auth', require('./routes/auth'));
 app.use('/comms',ensureAuthenticated, require('./routes/comms'));
 
-//redirect any failed routes to root
-app.use(function(req,res){
-    res.redirect("/");
-});
-
-
 //check registration!!!!!!
 
 app.get('/ui/init/:id', function(req,res){
@@ -88,6 +82,11 @@ app.get('/ui/init/:id', function(req,res){
   else{
     res.send({success:false});
   }
+});
+
+//redirect any failed routes to root
+app.use(function(req,res){
+    res.redirect("/");
 });
 
 console.log("listening on port " + PORT);
