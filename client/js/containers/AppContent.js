@@ -11,7 +11,7 @@ import Gauge from '../components/Gauge';
 import FittedText from '../components/FittedText';
 import {MAXREADINGS} from '../constants/ChartConstants';
 import * as AppActions from '../actions/AppActions';
-
+import UIBuilder from '../components/uibuilder/UIBuilder';
 
 function lookup(boxes, name){
     return  boxes.reduce((acc, arr, i)=>{
@@ -87,6 +87,10 @@ class AppContent extends Component {
 				
 				switch (app.view){	
 					
+					case 'uibuilder':
+						dataview = 	<UIBuilder {...{w: APPWIDTH, h: APPHEIGHT, sourceId: app.sourceId}} />
+						break;
+						
 					case 'html':
 					
 						dataview = <div>

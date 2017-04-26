@@ -6,6 +6,7 @@ import layout from './layout';
 import debug from './debug';
 import bulbs from './bulbs';
 import pipsta from './pipsta';
+import uibuilder from './uibuilder';
 
 import {routerReducer} from 'react-router-redux';
 
@@ -17,6 +18,7 @@ const rootReducer = combineReducers({
   debug,
   bulbs,
   pipsta,
+  uibuilder,
   routing: routerReducer,
 });
 
