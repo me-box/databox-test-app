@@ -13,7 +13,7 @@
   "license": "MIT",
   "dependencies": {
     "body-parser": "^1.15.1",
-    "connect-redis": "^3.1.0",
+    "connect-mongostore": "^0.1.4",
     "ejs": "^2.4.2",
     "express": "^4.13.4",
     "express-session": "^1.14.0",

@@ -3,16 +3,9 @@ import passport from 'passport';
 import User from '../models/user';
 const router = express.Router();
   
-router.get('/github', passport.authenticate('github', { scope: 'repo' }));
-
-
 router.get('/logout',  function(req,res){
-	console.log("IN LOGOUT - USER IS ");
-	console.log(req.user);
 	
 	if (req.user){
-		console.log("removing user");
-		console.log(req.user);
 		User.findOne({ username: req.user.username}).remove().exec();
 	}
 	
@@ -23,11 +16,11 @@ router.get('/logout',  function(req,res){
 	});
 });
 
+router.get('/github', passport.authenticate('github', { scope: 'public_repo' }));
+
 router.get('/github/callback', 
-  	
-  	passport.authenticate('github', { failureRedirect: '/auth/github' }),
-  	
-  	function(req, res) {
+ 
+  	passport.authenticate('github', { failureRedirect: '/logout' }), function(req, res) {
     	res.redirect('/');
 	}
 );

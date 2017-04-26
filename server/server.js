@@ -1,7 +1,7 @@
 import http  from 'http';
 import express from 'express';
 import expressSession from 'express-session';
-import connectredis from 'connect-redis';
+import connectmongostore from 'connect-mongostore';
 import bodyparser from 'body-parser';
 import config from './config';
 import websocketinit from './comms/websocket';
@@ -9,27 +9,22 @@ import request from 'superagent';
 import initPassport from './strategies';
 import mongoose from 'mongoose';
 import ipcinit from './comms/ipc';
-
+const MongoStore = connectmongostore(expressSession);
 mongoose.connect(config.mongo.url);
-const RedisStore 	 = connectredis(expressSession);
+
 
 const app = express();
 app.use('/', express.static("static"));
 app.use(expressSession(
                       {
-                        store: new RedisStore({
-                          host: config.redis.host,
-                          port: config.redis.port,
-                          disableTTL: true,
-                          pass: config.redis.pass || undefined,
-                        }),
-                        key: 'express.sid',
+                        store: new MongoStore({'db': 'testsessions'}),
+                        /*key: 'express.sid',
                         resave: false,
                         rolling: false,
                         saveUninitialized:false, //else passport will save empty object to store, which forces logout!
                         cookie:{
                             maxAge: 2*24*60*60*1000, //2 days
-                        },
+                        },*/
                         secret: config.secret,
                       }
 ));
@@ -50,6 +45,7 @@ const ensureAuthenticated = (req, res, next) => {
   //req.user = {username:'tlodge'}
   //return next(null);
  
+
   if (req.isAuthenticated()){
     return  next(null);
   }
@@ -66,7 +62,7 @@ app.get('/', ensureAuthenticated, function(req,res){
 });
 
 app.get('/login', function(req,res){
-	res.render('login');	
+  res.render('login');	
 });
 
 app.use('/auth', require('./routes/auth'));

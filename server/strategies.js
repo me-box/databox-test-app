@@ -14,6 +14,7 @@ export default function initPassport(app){
  
 				function(accessToken, refreshToken, profile, cb) {
 					
+
 					User.findOne({ githubId: profile.id }, function (err, user) {
 						if (user == null){
 							var newuser = new User({ githubId: profile.id, 
@@ -25,6 +26,7 @@ export default function initPassport(app){
 								return cb(err, user);
 							});
 						}else{
+							
 							return cb(null, user);
 						}
 					});
@@ -36,9 +38,11 @@ export default function initPassport(app){
 	});
  
 	passport.deserializeUser(function(id, done) {
-	  User.findById(id, function(err, user) {
-		done(err, user);
-	  });
+		console.log("-------------------------->>>>>>>>>>>>>>>> deserialusing user ");
+	  	User.findById(id, function(err, user) {
+	  		console.log(user);
+			done(err, user);
+	  	});
 	});
 
 	app.use(passport.initialize());

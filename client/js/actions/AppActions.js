@@ -37,34 +37,41 @@ export function pipstaMessage(data){
 }
 
 export function newMessage(msg) {
- 
+  
+  if (!msg)
+    return;
+  
   console.log("seen message");
   console.log(msg);
   
-  if (!msg)
-  	return;
+  return function (dispatch, getState) {
+  
+    if (msg.type === "control" && msg.payload.command==="reset"){
+      dispatch({type: APP_RESET})
+      return;
+    }
 
-  
-  if (msg.type === "control" && msg.payload.command==="reset"){
-  	return {
-  		type: APP_RESET,
-  	}
-  }
-  
-  const {sourceId, payload, layout} = msg;
-  const {id, name, view, data} = payload;
-  const {options, values} = data;
-  console.log("values are");
-  console.log(values);
-  
-  return {
-    type: APP_MESSAGE,
-    id,
-    sourceId,
-    layout,
-    name,
-    view,
-    options,
-    values,
+    const {sourceId, payload={}, layout} = msg;
+    const {id, name, view, data={}} = payload;
+
+
+    //TODO - this is a special case for uibuilder - not to make standard
+
+    if (view === "uibuilder"){
+        const mappings = getState().uibuilder.mappings[data.id] || [];
+        mappings.map((item)=>{
+          item.onData({msg:data}, 0, item.mapping);
+        }); 
+    }
+
+    dispatch({
+      type: APP_MESSAGE,
+      id,
+      sourceId,
+      layout,
+      name,
+      view,
+      data,
+    });
   }
 }
