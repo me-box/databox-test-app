@@ -74,7 +74,11 @@ app.use(function(req,res){
     res.redirect("/");
 });
 
+
+//check registration!!!!!!
+
 app.get('/ui/init/:id', function(req,res){
+  console.log("seen an init!!");
 
   const result = lookup(req.params.id);
 
