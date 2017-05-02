@@ -29,6 +29,9 @@ module.exports = {
 	    		'/debug/*':{
 	    			target: 'http://localhost:9095',
 	    		},
+                '/ui/*':{
+                    target: 'http://localhost:9095',
+                },
         }
     },
 

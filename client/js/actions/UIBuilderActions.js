@@ -35,6 +35,23 @@ const _getNode = (nodesByKey, nodesById, enterKey, path)=>{
 
 
 
+const _parenttemplates = (templatesById)=>{
+  
+    const templates = Object.keys(templatesById);
+
+    const children = templates.reduce((acc, key)=>{
+        const template = templatesById[key];
+        if (template.children){
+          acc = [...acc, ...template.children];
+        }
+        return acc;
+    },[]);
+
+    return templates.filter((id)=>{
+      return children.indexOf(id) == -1;
+    });
+}
+
 function removeNode(nodeId, path, enterKey){
  
    return {
@@ -46,13 +63,15 @@ function removeNode(nodeId, path, enterKey){
 }
 
 function updateNodeAttribute(path:Array, property:string, value, enterKey:string, ts:number, index:number) {
- 
+  console.log("in updat enode attribute");
   return (dispatch, getState)=>{
     
     //clone this node if we need to
     
     if (_shouldClone(path, enterKey, getState().uibuilder.nodesByKey)){
-     
+      console.log("SHOULD CLONE IS TRUE!!");
+      console.log(UIBUILDER_CLONE_NODE);
+      
       dispatch({
           type: UIBUILDER_CLONE_NODE,
           enterKey,
@@ -74,6 +93,7 @@ function updateNodeAttribute(path:Array, property:string, value, enterKey:string
 }
 
 function cloneNode(path:Array, enterKey, index){
+  console.log("in clone node!");
   return (dispatch, getState)=>{
 
     if (_shouldClone(path, enterKey, getState().uibuilder.nodesByKey)){
@@ -89,6 +109,8 @@ function cloneNode(path:Array, enterKey, index){
 }
 
 function updateNodeStyle(path:Array, property:string, value, enterKey:string, ts:number, index:number){
+   console.log("UPDATE NODE STYLE");
+
   return (dispatch, getState)=>{
 
     if (_shouldClone(path, enterKey, getState().uibuilder.nodesByKey)){
@@ -112,6 +134,7 @@ function updateNodeStyle(path:Array, property:string, value, enterKey:string, ts
 }
 
 function updateNodeTransform(path:Array, property:string, transform:string, enterKey:string, ts:number, index:number){
+ console.log("UPDATE NODE TRANSFORM");
 
    return (dispatch, getState)=>{
   
@@ -158,7 +181,7 @@ export function init(id){
 		dispatch(networkAccess(`initing`));
 		console.log(`** calling ./ui/init/${id}`);
 		request
-		  .get(`./ui/init/${id}`)
+		  .get(`/ui/init/${id}`)
 		  .set('Accept', 'application/json')
 		  .end(function(err, res){
 			if (err){
@@ -177,7 +200,7 @@ export function init(id){
 
 			  		dispatch({
 			  			type: UIBUILDER_INIT,
-			  			templates: Object.keys(templates),
+			  			templates: _parenttemplates(templates),
 			  			templatesById: templates,
 			  		});
 
@@ -198,6 +221,10 @@ export function subscribeMappings(mappings, transformers){
 	    for (let i = 0; i < mappings.length; i++){
 	      
 	      const fn = _function_for[mappings[i].ttype];
+
+        console.log("fn is ");
+        console.log(fn);
+
 	      
 	      if (fn){
 
@@ -212,9 +239,12 @@ export function subscribeMappings(mappings, transformers){
 	          let enterKey = null;
 
 	          if (template.enterFn){
+              console.log("OK TEMPLATE HAS AN ENTER FUNCTION!!");
 	            const {enter,key} = template.enterFn;
 	            shouldenter = Function(...enter.params, enter.body)(data,count);
 	            enterKey =  Function(...key.params, key.body)(data,count);
+              console.log("enter key is");
+              console.log(enterKey);
 	          }
 	        
 	          const remove   = template.exitFn ?   Function(...template.exitFn.params, template.exitFn.body)(data,count) : null; //template.exitFn(data, count) : false;            

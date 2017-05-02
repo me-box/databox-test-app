@@ -72,7 +72,7 @@ app.use('/comms',ensureAuthenticated, require('./routes/comms'));
 //check registration!!!!!!
 
 app.get('/ui/init/:id', function(req,res){
-  console.log("seen an init!!");
+  console.log("---->  seen an init!!");
 
   const result = lookup(req.params.id);
 

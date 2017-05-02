@@ -40,9 +40,7 @@ export function newMessage(msg) {
   
   if (!msg)
     return;
-  
-  console.log("seen message");
-  console.log(msg);
+
   
   return function (dispatch, getState) {
   

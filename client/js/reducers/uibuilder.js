@@ -1,5 +1,5 @@
 import {UIBUILDER_INIT, UIBUILDER_CLONE_NODE, UIBUILDER_UPDATE_NODE_ATTRIBUTE, UIBUILDER_UPDATE_NODE_STYLE, UIBUILDER_UPDATE_NODE_TRANSFORM,UIBUILDER_ADD_MAPPING, APP_MESSAGE} from '../constants/ActionTypes';
-import {generateId} from '../utils/utils';
+import {generateId, scalePreservingOrigin, componentsFromTransform,originForNode} from '../utils/utils';
 
 const initialState: State = {
   nodes: [],
@@ -63,6 +63,8 @@ const _createNode = (template, blueprints, ts, index)=>{
 } 
 
 const _cloneStaticTemplates = (templates, blueprints)=>{
+    
+    console.log("ok have called _cloneStaticTemplates!!!!!!");
 
     return templates.filter((key)=>{
        return !blueprints[key].enterFn;
@@ -172,13 +174,59 @@ const _cloneNode = (state, action)=>{
 
 }
 
+const _combine = (newtransform="", oldtransform="")=>{
+  
+    const {scale, rotate, translate} = Object.assign({}, componentsFromTransform(oldtransform), componentsFromTransform(newtransform));
+    const transforms = [];
+
+    if (scale)
+      transforms.push(`scale(${scale})`);
+
+    if (translate)
+      transforms.push(`translate(${translate})`);
+
+    if (rotate)
+      transforms.push(`rotate(${rotate})`);
+
+    return transforms.join();
+}
+
+const _createTransform = (node, type, transform)=>{
+
+    
+   const {x,y}   =  originForNode(node);
+
+   switch(type){
+      
+      case "scale":
+          const {scale} = componentsFromTransform(transform);
+          return _combine(scalePreservingOrigin(x, y, scale || 1), node.transform || "");
+
+      case "translate":
+          const {translate} = componentsFromTransform(transform);
+          return _combine(`translate(${translate})`,  node.transform || "");
+
+      case "rotate":
+          const {rotate} = componentsFromTransform(transform);
+          return _combine(`rotate(${rotate},${x},${y})`, node.transform || "")
+
+      default:
+
+   }
+}
+
+
 export default function uibuilder(state = initialState, action) {
   switch (action.type) {
 
   	case UIBUILDER_INIT:
-  		console.log("in uibuolder init!");
+
+      console.log("cloning static templates from ");
+      console.log(action.templates);
+      console.log(action.templatesById);
 
       const {nodes, nodesById, nodesByKey} = _cloneStaticTemplates(action.templates, action.templatesById);
+
 
   		const _state = Object.assign({}, state, {
                                                 nodes,
@@ -196,29 +244,20 @@ export default function uibuilder(state = initialState, action) {
       return Object.assign({}, state, _cloneNode(state, action));
 
   case UIBUILDER_UPDATE_NODE_ATTRIBUTE:  
-      console.log("OK IN UPDATE NODE ATTRIBUTE!!!");
-      console.log(JSON.stringify(action, null, 4)); 
       return Object.assign({}, state, _updateNodeAttributes(state, action));
 
   case UIBUILDER_UPDATE_NODE_STYLE: 
       return Object.assign({}, state, _updateNodeStyles(state, action));
 
   case UIBUILDER_UPDATE_NODE_TRANSFORM:
-      console.log("OK IN UPDATE NODE TRANSFORM!!!");
-      console.log(JSON.stringify(action, null, 4)); 
       return Object.assign({}, state, _updateNodeTransforms(state, action));
 
   case UIBUILDER_ADD_MAPPING:
-      console.log("in uibuilder add mapping with ");
-      console.log(action);
+      
       const _s =  Object.assign({}, state, {mappings: Object.assign({}, state.mappings, {[action.sourceId]: [...(state.mappings[action.sourceId]||[]), action.map]})});
-      console.log("after mapping state is");
-      console.log(_s);
-      console.log("-----------");
       return _s;
 
 	case APP_MESSAGE:
-		console.log("UIBUIDLER!!!  seen some data!!");
     //const {id, payload} = action.payload.data;
 
 		//console.log(action.payload.data);

@@ -17,8 +17,6 @@ export default function init(namespace, appId, dispatch) {
   });
 
   socket.on("message", function(data){
-  	
-  	console.log(Date.now() - startconnect);
   	 
   	if (data && data.type==="control"){
   		if ((Date.now() - startconnect) > 8000){
