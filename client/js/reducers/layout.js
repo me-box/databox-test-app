@@ -1,8 +1,15 @@
-import { APP_MESSAGE, APP_REMOVED, APP_RESET } from '../constants/ActionTypes';
+import {APP_INIT, APP_MESSAGE, APP_REMOVED, APP_RESET } from '../constants/ActionTypes';
 
 export default function layout(state = null, action) {
   	switch (action.type) {
 	  
+	  case APP_INIT:
+	  	console.log("layout --- seen init");
+	  	if (action.data && action.data.layout){
+	  		return  Object.assign({}, state, {[action.data.id]:action.data.layout});
+	  	}
+	  	return state;
+
 	  case APP_REMOVED:
 	  	return Object.keys(state).reduce((acc, key)=>{
 	  		if (key !== action.appId){

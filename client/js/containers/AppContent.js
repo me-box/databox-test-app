@@ -33,6 +33,8 @@ class AppContent extends Component {
 	} 
 	
 	componentDidMount(){
+		console.log("OK APP HAS MOUNTED!");
+		console.log(this.props);
   		window.addEventListener('resize', this._handleResize);
 	}
 

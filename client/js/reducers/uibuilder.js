@@ -1,7 +1,7 @@
-import {UIBUILDER_INIT, UIBUILDER_CLONE_NODE, UIBUILDER_UPDATE_NODE_ATTRIBUTE, UIBUILDER_UPDATE_NODE_STYLE, UIBUILDER_UPDATE_NODE_TRANSFORM,UIBUILDER_ADD_MAPPING, APP_MESSAGE} from '../constants/ActionTypes';
+import {UIBUILDER_INIT, UIBUILDER_REMOVE_NODE, UIBUILDER_CLONE_NODE, UIBUILDER_UPDATE_NODE_ATTRIBUTE, UIBUILDER_UPDATE_NODE_STYLE, UIBUILDER_UPDATE_NODE_TRANSFORM,UIBUILDER_ADD_MAPPING, APP_MESSAGE} from '../constants/ActionTypes';
 import {generateId, scalePreservingOrigin, componentsFromTransform,originForNode} from '../utils/utils';
 
-const initialState: State = {
+const initialState = {
   nodes: [],
   nodesByKey: {},
   nodesById: {},
@@ -12,6 +12,9 @@ const initialState: State = {
 
 //nce we have all child ids we can then create a lookuo table to map old ids to new, then return all new.
 const _getAllChildIds = (template, blueprints)=>{
+    if (!template.children)
+      return [];
+
     return [].concat.apply([], template.children.map((child)=>{
         if (blueprints[child].children){
           return [child, ..._getAllChildIds(blueprints[child], blueprints)]
@@ -63,8 +66,7 @@ const _createNode = (template, blueprints, ts, index)=>{
 } 
 
 const _cloneStaticTemplates = (templates, blueprints)=>{
-    
-    console.log("ok have called _cloneStaticTemplates!!!!!!");
+  
 
     return templates.filter((key)=>{
        return !blueprints[key].enterFn;
@@ -216,15 +218,10 @@ const _createTransform = (node, type, transform)=>{
 }
 
 
-export default function uibuilder(state = initialState, action) {
+function viz(state = initialState, action) {
   switch (action.type) {
 
   	case UIBUILDER_INIT:
-
-      console.log("cloning static templates from ");
-      console.log(action.templates);
-      console.log(action.templatesById);
-
       const {nodes, nodesById, nodesByKey} = _cloneStaticTemplates(action.templates, action.templatesById);
 
 
@@ -235,15 +232,37 @@ export default function uibuilder(state = initialState, action) {
                                                 templates : action.templates,
                                                 templatesById: action.templatesById,
                                               });
-	   	
-		  console.log("------ state --------");
-		  console.log(_state);
 	   	return _state;
 	
+  case UIBUILDER_REMOVE_NODE:
+      
+      //WORKS FIRST TIME ROUND BUT FAILS AFTER THAT - IS THE onData function using stale info?
+
+      const templateId = action.path[action.path.length-1];
+
+      const todelete =  [action.nodeId, ..._getAllChildIds(action.nodeId, state.nodesById)];
+
+      return  Object.assign({}, state, {
+                                                nodes : state.nodes.filter(nid=>nid!=action.nodeId),
+                                                nodesByKey : Object.assign({}, state.nodesByKey, {[templateId] : Object.keys(state.nodesByKey[templateId]).reduce((acc, key)=>{
+                                                    const nodeId = state.nodesByKey[templateId][key];
+                                                    if (nodeId != action.nodeId){
+                                                      acc[key] =  nodeId;
+                                                    }
+                                                    return acc;
+                                                },{})}),
+                                                nodesById : Object.keys(state.nodesById).reduce((acc, key)=>{
+                                                   if (todelete.indexOf(key) === -1){
+                                                      acc[key] = state.nodesById[key];
+                                                   }
+                                                   return acc;
+                                                },{})
+                            });
+
   case UIBUILDER_CLONE_NODE:
       return Object.assign({}, state, _cloneNode(state, action));
 
-  case UIBUILDER_UPDATE_NODE_ATTRIBUTE:  
+  case UIBUILDER_UPDATE_NODE_ATTRIBUTE: 
       return Object.assign({}, state, _updateNodeAttributes(state, action));
 
   case UIBUILDER_UPDATE_NODE_STYLE: 
@@ -254,7 +273,7 @@ export default function uibuilder(state = initialState, action) {
 
   case UIBUILDER_ADD_MAPPING:
       
-      const _s =  Object.assign({}, state, {mappings: Object.assign({}, state.mappings, {[action.sourceId]: [...(state.mappings[action.sourceId]||[]), action.map]})});
+      const _s =  Object.assign({}, state, {mappings: Object.assign({}, state.mappings, {[action.datasourceId]: [...(state.mappings[action.datasourceId]||[]), action.map]})});
       return _s;
 
 	case APP_MESSAGE:
@@ -266,4 +285,13 @@ export default function uibuilder(state = initialState, action) {
 	default:
 	    return state;
   }
+}
+
+
+export default function uibuilder(state = {}, action){
+ 
+  if (action.sourceId){
+    return Object.assign({}, state, {[action.sourceId] : viz(state[action.sourceId], action)});
+  }
+  return state;
 }

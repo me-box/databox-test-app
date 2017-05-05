@@ -1,5 +1,8 @@
-import { APP_REMOVED, APP_MESSAGE, APP_RESET, DEBUG_MESSAGE,  DEBUG_TOGGLE_PAUSE, BULB_MESSAGE, PIPSTA_MESSAGE } from '../constants/ActionTypes';
+import { APP_INIT, APP_REMOVED, APP_MESSAGE, APP_RESET, DEBUG_MESSAGE,  DEBUG_TOGGLE_PAUSE, BULB_MESSAGE, PIPSTA_MESSAGE } from '../constants/ActionTypes';
+import {networkAccess, networkError, networkSuccess} from './NetworkActions';
+import request from 'superagent';
 
+const inited = {};
 
 export function togglePause(){
 	return {
@@ -36,11 +39,42 @@ export function pipstaMessage(data){
 	}
 }
 
+export function init(id){
+  
+  console.log("APP INIT HAS BEEN CALLED!!!! : " + id);
+
+  return function (dispatch, getState) {
+  
+    dispatch(networkAccess(`initing`));
+    console.log(`** calling ./ui/init/${id}`);
+    request
+      .get(`/ui/init/${id}`)
+      .set('Accept', 'application/json')
+      .end(function(err, res){
+      if (err){
+        console.log(err);
+        dispatch(networkError(`failed init`));
+      }else{
+      
+        dispatch(networkSuccess(`successfully inited!`));
+        console.log(res.body);
+
+        if (res.body.init){
+            dispatch({
+              type: APP_INIT,
+              data: res.body.init,
+            });
+        }
+      }
+     });
+  }
+}
+
+
 export function newMessage(msg) {
   
   if (!msg)
     return;
-
   
   return function (dispatch, getState) {
   
@@ -49,24 +83,35 @@ export function newMessage(msg) {
       return;
     }
 
-    const {sourceId, payload={}, layout} = msg;
+
+    const {sourceId, payload={}} = msg;
     const {id, name, view, data={}} = payload;
+   
+    console.log("msg: " + sourceId);
 
+    if (!inited[id]){
+        inited[id] = true;
+        dispatch(init(id));
+    }
 
-    //TODO - this is a special case for uibuilder - not to make standard
+    //TODO - this is a special case for uibuilder -  make standard
 
     if (view === "uibuilder"){
-        const mappings = getState().uibuilder.mappings[data.id] || [];
-        mappings.map((item)=>{
-          item.onData({msg:data}, 0, item.mapping);
-        }); 
+        const state = getState().uibuilder[sourceId];
+       
+        if (state && state.mappings){
+          const mappings = state.mappings[data.id] || [];
+
+          mappings.map((item)=>{
+            item.onData({msg:data}, 0, item.mapping);
+          });
+        } 
     }
 
     dispatch({
       type: APP_MESSAGE,
       id,
       sourceId,
-      layout,
       name,
       view,
       data,

@@ -13,6 +13,9 @@ const _function_for = {
 }
 
 const _shouldClone = (path, enterKey, nodesByKey)=>{
+  if (!nodesByKey)
+    return false;
+
   const [templateId, ...rest] = path;
   const subkey     = enterKey ? enterKey : "root";
   if (nodesByKey[templateId]){
@@ -52,28 +55,26 @@ const _parenttemplates = (templatesById)=>{
     });
 }
 
-function removeNode(nodeId, path, enterKey){
- 
+function removeNode(sourceId, nodeId, path, enterKey){
+  
    return {
       type: UIBUILDER_REMOVE_NODE,
+      sourceId,
       enterKey,
       nodeId,
       path,
    }
 }
 
-function updateNodeAttribute(path:Array, property:string, value, enterKey:string, ts:number, index:number) {
-  console.log("in updat enode attribute");
+function updateNodeAttribute(sourceId:number, path:Array, property:string, value, enterKey:string, ts:number, index:number) {
+  
   return (dispatch, getState)=>{
     
     //clone this node if we need to
-    
-    if (_shouldClone(path, enterKey, getState().uibuilder.nodesByKey)){
-      console.log("SHOULD CLONE IS TRUE!!");
-      console.log(UIBUILDER_CLONE_NODE);
-      
+    if (_shouldClone(path, enterKey,  (getState().uibuilder[sourceId] || {}).nodesByKey)){
       dispatch({
           type: UIBUILDER_CLONE_NODE,
+          sourceId,
           enterKey,
           path,
           ts,
@@ -84,6 +85,7 @@ function updateNodeAttribute(path:Array, property:string, value, enterKey:string
     //update the node
     dispatch({
         type: UIBUILDER_UPDATE_NODE_ATTRIBUTE,
+        sourceId,
         path,
         property,
         value,
@@ -92,13 +94,14 @@ function updateNodeAttribute(path:Array, property:string, value, enterKey:string
   };
 }
 
-function cloneNode(path:Array, enterKey, index){
-  console.log("in clone node!");
+function cloneNode(sourceId:number, path:Array, enterKey, index){
+ 
   return (dispatch, getState)=>{
 
-    if (_shouldClone(path, enterKey, getState().uibuilder.nodesByKey)){
+    if (_shouldClone(path, enterKey,  (getState().uibuilder[sourceId] || {}).nodesByKey)){
       dispatch({
           type: UIBUILDER_CLONE_NODE,
+          sourceId,
           enterKey,
           path,
           ts: Date.now(),
@@ -108,14 +111,14 @@ function cloneNode(path:Array, enterKey, index){
   }
 }
 
-function updateNodeStyle(path:Array, property:string, value, enterKey:string, ts:number, index:number){
-   console.log("UPDATE NODE STYLE");
+function updateNodeStyle(sourceId:number, path:Array, property:string, value, enterKey:string, ts:number, index:number){
 
   return (dispatch, getState)=>{
 
-    if (_shouldClone(path, enterKey, getState().uibuilder.nodesByKey)){
+    if (_shouldClone(path, enterKey, (getState().uibuilder[sourceId] || {}).nodesByKey)){
       dispatch({
           type: UIBUILDER_CLONE_NODE,
+          sourceId,
           enterKey,
           path,
           ts,
@@ -125,6 +128,7 @@ function updateNodeStyle(path:Array, property:string, value, enterKey:string, ts
 
     dispatch({
       type: UIBUILDER_UPDATE_NODE_STYLE,
+      sourceId,
       path,
       property,
       value,
@@ -133,17 +137,18 @@ function updateNodeStyle(path:Array, property:string, value, enterKey:string, ts
   }
 }
 
-function updateNodeTransform(path:Array, property:string, transform:string, enterKey:string, ts:number, index:number){
- console.log("UPDATE NODE TRANSFORM");
+function updateNodeTransform(sourceId:number, path:Array, property:string, transform:string, enterKey:string, ts:number, index:number){
 
-   return (dispatch, getState)=>{
+
+  return (dispatch, getState)=>{
   
-  if (_shouldClone(path, enterKey, getState().uibuilder.nodesByKey)){
+  if (_shouldClone(path, enterKey,  (getState().uibuilder[sourceId] || {}).nodesByKey)){
       
       //console.log("YES - cloning!");
 
       dispatch({
           type: UIBUILDER_CLONE_NODE,
+          sourceId,
           enterKey,
           path,
           ts,
@@ -153,6 +158,7 @@ function updateNodeTransform(path:Array, property:string, transform:string, ente
 
     dispatch({
         type: UIBUILDER_UPDATE_NODE_TRANSFORM,
+        sourceId,
         path,
         property,
         transform,
@@ -162,11 +168,15 @@ function updateNodeTransform(path:Array, property:string, transform:string, ente
 }
 
 
-function addMapping(sourceId, map){
-	console.log("Adding mapping");
+
+function addMapping(sourceId, datasourceId, map){
+  
+  console.log("adding mapping " + sourceId);
+
 	return {
 		type: UIBUILDER_ADD_MAPPING,
 		sourceId,
+    datasourceId,
 		map,
 	}
 }
@@ -189,22 +199,20 @@ export function init(id){
 			  dispatch(networkError(`failed init`));
 			}else{
 			
-			  	dispatch(networkSuccess(`successfully inited!`));
+			  dispatch(networkSuccess(`successfully inited!`));
 				console.log(res.body);
 
 				if (res.body.init){
 					const {templates, mappings, transformers} = res.body.init;
-					console.log("*******************");
-					console.log(JSON.stringify(res.body.init,null,4));
-					console.log("*******************");
 
 			  		dispatch({
 			  			type: UIBUILDER_INIT,
+              sourceId: id,
 			  			templates: _parenttemplates(templates),
 			  			templatesById: templates,
 			  		});
 
-			  		dispatch(subscribeMappings(mappings, transformers));
+			  		dispatch(subscribeMappings(id, mappings, transformers));
 				}
 			}
 		 });
@@ -212,25 +220,20 @@ export function init(id){
 }
 
 
-export function subscribeMappings(mappings, transformers){
+export function subscribeMappings(sourceId, mappings, transformers){
 
 	return (dispatch, getState)=>{
     	
-    	const {uibuilder: {nodesByKey, nodesById, templatesById}} = getState();
-
+    	
 	    for (let i = 0; i < mappings.length; i++){
 	      
 	      const fn = _function_for[mappings[i].ttype];
-
-        console.log("fn is ");
-        console.log(fn);
-
 	      
 	      if (fn){
 
 	        const onData = (data, count, mapping)=>{
 	         
-
+            const {nodesByKey={}, nodesById={}, templatesById={}} = getState().uibuilder[sourceId];
 	          const {mappingId, from: {key},  to:{property}} = mapping;
 	          const template = templatesById[mapping.to.path[mapping.to.path.length-1]];
 	          const value   = resolvePath(mapping.from.key, mapping.from.path, data);
@@ -239,26 +242,27 @@ export function subscribeMappings(mappings, transformers){
 	          let enterKey = null;
 
 	          if (template.enterFn){
-              console.log("OK TEMPLATE HAS AN ENTER FUNCTION!!");
 	            const {enter,key} = template.enterFn;
 	            shouldenter = Function(...enter.params, enter.body)(data,count);
 	            enterKey =  Function(...key.params, key.body)(data,count);
-              console.log("enter key is");
-              console.log(enterKey);
 	          }
 	        
 	          const remove   = template.exitFn ?   Function(...template.exitFn.params, template.exitFn.body)(data,count) : null; //template.exitFn(data, count) : false;            
 	          const node = _getNode(nodesByKey, nodesById, enterKey, mapping.to.path); 
 	          
-	          if (remove){
-	            dispatch(removeNode(node.id, mapping.to.path, enterKey));
+	          if (remove && node.id){
+              console.log("REMOVING NODE!!! " + node.id);
+	            dispatch(removeNode(sourceId, node.id, mapping.to.path, enterKey));
+              return;
+              //unsubscribe this mapping?
 	          }else if (shouldenter){
+              console.log("CREATING NODE ");
 	            const transformer = transformers[mappingId] || defaultCode(key,property);
 	            const transform   = Function(key, "node", "i", transformer);  
-	            dispatch(fn(mapping.to.path,property,transform(value, node, count), enterKey, Date.now(), count));
+	            dispatch(fn(sourceId, mapping.to.path,property,transform(value, node, count), enterKey, Date.now(), count));
 	          }
 	        }
-	        dispatch(addMapping(mappings[i].from.sourceId, {mapping:mappings[i], onData}))
+	        dispatch(addMapping(sourceId, mappings[i].from.sourceId, {mapping:mappings[i], onData}))
 	      }
 	    }
 	}

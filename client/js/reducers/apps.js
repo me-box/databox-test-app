@@ -36,7 +36,7 @@ const gauge = (state = {data:[], min:999999, max:-999999}, action)=>{
   	case APP_MESSAGE:
   		const {values, options} = action.data;
 
-  		if (values.type === "data"){ //TODO HANDLE INIT TYPES!
+  		if (values.type === "data"){ 
     		return Object.assign({}, ...state, {	data: addGaugeData(state, action),
     												options: options,
 													view: action.view,
@@ -117,7 +117,7 @@ export default function apps(state = {}, action) {
 	  
 	  case APP_RESET:
 	  	return {};
-	  	
+	  
 	  case APP_REMOVED:
 	  	
 	  	return Object.keys(state).reduce((acc, key)=>{
@@ -127,9 +127,7 @@ export default function apps(state = {}, action) {
 	  		return acc;
 	  	},{})
 	  
-	  
-	  //purge any apps that don't exist in layout...
-	  
+	   
 	  case APP_MESSAGE:
 	  
 	  	
