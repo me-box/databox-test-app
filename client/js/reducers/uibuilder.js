@@ -7,7 +7,8 @@ const initialState = {
   nodesById: {},
   templatesById: {},
   templates: [],
-  mappings: {},     
+  mappings: {}, 
+  canvasdimensions: {w:0, h:0},    
 };
 
 //nce we have all child ids we can then create a lookuo table to map old ids to new, then return all new.
@@ -231,6 +232,7 @@ function viz(state = initialState, action) {
                                                 nodesByKey,
                                                 templates : action.templates,
                                                 templatesById: action.templatesById,
+                                                canvasdimensions: action.canvasdimensions,
                                               });
 	   	return _state;
 	

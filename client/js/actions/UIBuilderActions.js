@@ -203,13 +203,14 @@ export function init(id){
 				console.log(res.body);
 
 				if (res.body.init){
-					const {templates, mappings, transformers} = res.body.init;
+					const {templates, mappings, transformers, canvasdimensions} = res.body.init;
 
 			  		dispatch({
 			  			type: UIBUILDER_INIT,
               sourceId: id,
 			  			templates: _parenttemplates(templates),
 			  			templatesById: templates,
+              canvasdimensions,
 			  		});
 
 			  		dispatch(subscribeMappings(id, mappings, transformers));
@@ -251,12 +252,10 @@ export function subscribeMappings(sourceId, mappings, transformers){
 	          const node = _getNode(nodesByKey, nodesById, enterKey, mapping.to.path); 
 	          
 	          if (remove && node.id){
-              console.log("REMOVING NODE!!! " + node.id);
 	            dispatch(removeNode(sourceId, node.id, mapping.to.path, enterKey));
               return;
               //unsubscribe this mapping?
 	          }else if (shouldenter){
-              console.log("CREATING NODE ");
 	            const transformer = transformers[mappingId] || defaultCode(key,property);
 	            const transform   = Function(key, "node", "i", transformer);  
 	            dispatch(fn(sourceId, mapping.to.path,property,transform(value, node, count), enterKey, Date.now(), count));

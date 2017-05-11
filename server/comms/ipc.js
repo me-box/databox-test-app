@@ -49,10 +49,6 @@ export default function init(){
 						//console.log(msg);
 						if (msg.type && msg.type==="control"){
 							if (msg.payload && msg.payload.command === "init"){
-								console.log("saving");
-								console.log(msg.payload.data.id);
-								console.log(msg.payload.data);
-
 								savedata(msg.payload.data.id, msg.payload.data);
 								printstorage();
 							}

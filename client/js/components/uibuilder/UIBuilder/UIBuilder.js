@@ -71,10 +71,10 @@ class UIBuilder extends Component {
 
   render() {
 
-  	const {dimensions:{w,h}} = this.props;
-
+  	const {canvasdimensions, dimensions:{w,h}} = this.props;
+    console.log(`CANVAS DIMENSIONS ${w},${h} - original ${canvasdimensions.w} ${canvasdimensions.h}`);
     return <div className="canvas" style={{width:"100%", height:"100%"}}>
-      <svg id="svgchart" viewBox={`0 0 ${w} ${h}`} width={w} height={h}>
+      <svg id="svgchart" viewBox={`0 0 ${canvasdimensions.w} ${canvasdimensions.h}`} width={w} height={h} preserveAspectRatio="xMinYMin slice">
     		{this.renderNodes()}	
     	</svg>
     </div>
@@ -86,6 +86,7 @@ function select(state, newProps) {
 
   return {
     dimensions: state.screen.dimensions,
+    canvasdimensions: state.uibuilder[newProps.sourceId] ? state.uibuilder[newProps.sourceId].canvasdimensions : {w:0,h:0},
     nodes: state.uibuilder[newProps.sourceId] ? state.uibuilder[newProps.sourceId].nodes : [],
     nodesById: state.uibuilder[newProps.sourceId] ? state.uibuilder[newProps.sourceId].nodesById : {},
   };

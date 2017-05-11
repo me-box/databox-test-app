@@ -81,6 +81,7 @@ class AppContent extends Component {
 					height: APPHEIGHT,
 					top:  HEADER_TOOLBAR_HEIGHT + APP_TITLEBAR_HEIGHT + (APPCONTAINERHEIGHT * i) + (APPHEIGHT * row),		
 				}
+
 			
 				let dataview = null;
 			
@@ -151,9 +152,9 @@ class AppContent extends Component {
 					WebkitFlex: '0 0 auto',
 					flex: '0 0 auto',
 				}
-								
-				return  <div>
-							{j==0 && <div style={titlebar}>
+
+
+				/*	{j==0 && <div style={titlebar}>
 								<div className="row">
 									<div style={remove}>
 										<div className="centered" onClick={this.appRemoved.bind(this, app.id)}><i className="fa fa-times fa-fw"></i></div>
@@ -162,7 +163,9 @@ class AppContent extends Component {
 										<div className="centered">{app.name}</div>
 									</div>
 								</div>
-							</div> }
+							</div> }*/
+								
+				return  <div>
 							<div key={`${appkey}${sourcekey}`} style={style}>
 								<div key={i} className={classname}>
 									{dataview}
