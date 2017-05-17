@@ -1,14 +1,11 @@
 import {networkAccess, networkError, networkSuccess} from './NetworkActions';
 import request from 'superagent';
-import {UIBUILDER_INIT, UIBUILDER_REMOVE_NODE, UIBUILDER_CLONE_NODE, UIBUILDER_UPDATE_NODE_ATTRIBUTE, UIBUILDER_UPDATE_NODE_TRANSFORM, UIBUILDER_UPDATE_NODE_STYLE, UIBUILDER_ADD_MAPPING} from '../constants/ActionTypes';
+import {UIBUILDER_INIT, UIBUILDER_PROVENANCE, UIBUILDER_REMOVE_NODE, UIBUILDER_CLONE_NODE, UIBUILDER_UPDATE_NODE_ATTRIBUTE, UIBUILDER_UPDATE_NODE_TRANSFORM, UIBUILDER_UPDATE_NODE_STYLE, UIBUILDER_ADD_MAPPING} from '../constants/ActionTypes';
 import {defaultCode, resolvePath} from '../utils/utils';
 
 const _function_for = {
-
     "attribute"	: updateNodeAttribute,
-    
     "transform"	: updateNodeTransform,
-    
     "style"		: updateNodeStyle,
 }
 
@@ -170,8 +167,7 @@ function updateNodeTransform(sourceId:number, path:Array, property:string, trans
 
 
 function addMapping(sourceId, datasourceId, map){
-  
-  console.log("adding mapping " + sourceId);
+
 
 	return {
 		type: UIBUILDER_ADD_MAPPING,
@@ -203,7 +199,7 @@ export function init(id){
 				console.log(res.body);
 
 				if (res.body.init){
-					const {templates, mappings, transformers, canvasdimensions} = res.body.init;
+					const {templates, mappings, transformers, canvasdimensions, tree} = res.body.init;
 
 			  		dispatch({
 			  			type: UIBUILDER_INIT,
@@ -211,6 +207,7 @@ export function init(id){
 			  			templates: _parenttemplates(templates),
 			  			templatesById: templates,
               canvasdimensions,
+              tree,
 			  		});
 
 			  		dispatch(subscribeMappings(id, mappings, transformers));
@@ -265,4 +262,46 @@ export function subscribeMappings(sourceId, mappings, transformers){
 	      }
 	    }
 	}
+}
+
+export function nodeClicked(sourceId, tid){
+  console.log("seen show provenance for sourceId " + sourceId + " tid " + tid);
+  
+  return (dispatch, getState)=>{
+    const {mappings,nodesByKey,tree} = getState().uibuilder[sourceId];
+    
+    /*
+      TODO:need to create a lookup table here as this is very inefficient (it finds the node id of the item that relates to this template 
+      - there could be many but only need one, since they are all derived from the same data path.
+    */
+
+    const nodes = Object.keys(nodesByKey).reduce((acc, key)=>{
+        const node = nodesByKey[key];
+        if (Object.keys(node).map(k=>node[k]).filter((item)=>item===tid).length > 0){
+          acc = key;
+        }
+        return acc;
+    },"");
+
+    const mappingIds = Object.keys(mappings).reduce((acc, key)=>{
+      const item = mappings[key];
+      
+      item.forEach((m)=>{
+         if (m.mapping.to.path.indexOf(nodes) != -1){
+            acc.push(m.mapping.mappingId);
+          }
+      });
+      return acc;
+    },[]);
+
+    //get all provenance trees!
+    const trees = mappingIds.map((item)=>tree[item]);
+    
+    dispatch ({
+      type: UIBUILDER_PROVENANCE,
+      sourceId,
+      trees: trees,
+    })
+  }
+
 }

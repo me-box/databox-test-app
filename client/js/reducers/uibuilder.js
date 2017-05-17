@@ -8,7 +8,8 @@ const initialState = {
   templatesById: {},
   templates: [],
   mappings: {}, 
-  canvasdimensions: {w:0, h:0},    
+  canvasdimensions: {w:0, h:0},  
+  tree: {},  
 };
 
 //nce we have all child ids we can then create a lookuo table to map old ids to new, then return all new.
@@ -233,12 +234,12 @@ function viz(state = initialState, action) {
                                                 templates : action.templates,
                                                 templatesById: action.templatesById,
                                                 canvasdimensions: action.canvasdimensions,
+                                                tree: action.tree,
                                               });
 	   	return _state;
 	
   case UIBUILDER_REMOVE_NODE:
       
-      //WORKS FIRST TIME ROUND BUT FAILS AFTER THAT - IS THE onData function using stale info?
 
       const templateId = action.path[action.path.length-1];
 
