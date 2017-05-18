@@ -2,6 +2,9 @@ import {networkAccess, networkError, networkSuccess} from './NetworkActions';
 import request from 'superagent';
 import {UIBUILDER_INIT, UIBUILDER_PROVENANCE, UIBUILDER_REMOVE_NODE, UIBUILDER_CLONE_NODE, UIBUILDER_UPDATE_NODE_ATTRIBUTE, UIBUILDER_UPDATE_NODE_TRANSFORM, UIBUILDER_UPDATE_NODE_STYLE, UIBUILDER_ADD_MAPPING} from '../constants/ActionTypes';
 import {defaultCode, resolvePath} from '../utils/utils';
+import {hierarchy, tree as d3tree} from 'd3-hierarchy';
+
+
 
 const _function_for = {
     "attribute"	: updateNodeAttribute,
@@ -275,6 +278,9 @@ export function nodeClicked(sourceId, tid){
       - there could be many but only need one, since they are all derived from the same data path.
     */
 
+    console.log("have got tree");
+    console.log(JSON.stringify(tree,null,4));
+
     const nodes = Object.keys(nodesByKey).reduce((acc, key)=>{
         const node = nodesByKey[key];
         if (Object.keys(node).map(k=>node[k]).filter((item)=>item===tid).length > 0){
@@ -294,13 +300,23 @@ export function nodeClicked(sourceId, tid){
       return acc;
     },[]);
 
+    console.log("mapping iasd ae");
+    console.log(JSON.stringify(mappingIds,null,4));
+
     //get all provenance trees!
     const trees = mappingIds.map((item)=>tree[item]);
-    
+    console.log("trees are");
+    console.log(JSON.stringify(trees, null, 4));
+
+    const h = hierarchy(trees[0], (d)=>d.parents);
+
+    var treelayout = d3tree().size([500, getState().screen.dimensions.h/2]);
+    var treenodes = treelayout(h);
+ 
     dispatch ({
       type: UIBUILDER_PROVENANCE,
       sourceId,
-      trees: trees,
+      tree: treenodes,
     })
   }
 

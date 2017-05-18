@@ -17,8 +17,6 @@ class App extends Component {
 	
 	componentDidMount(){
   		window.addEventListener('resize', this._handleResize);
-  		console.log("in here at app component mount");
-  		console.log(this.props);
   		this.props.dispatch(fetchChannelId());
 	}
 
