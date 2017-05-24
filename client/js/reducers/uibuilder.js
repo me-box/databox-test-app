@@ -1,4 +1,4 @@
-import {UIBUILDER_PROVENANCE, UIBUILDER_INIT, UIBUILDER_REMOVE_NODE, UIBUILDER_CLONE_NODE, UIBUILDER_UPDATE_NODE_ATTRIBUTE, UIBUILDER_UPDATE_NODE_STYLE, UIBUILDER_UPDATE_NODE_TRANSFORM,UIBUILDER_ADD_MAPPING, APP_MESSAGE} from '../constants/ActionTypes';
+import {UIBUILDER_PROVENANCE, UIBUILDER_RECORD_PATH, UIBUILDER_INIT, UIBUILDER_REMOVE_NODE, UIBUILDER_CLONE_NODE, UIBUILDER_UPDATE_NODE_ATTRIBUTE, UIBUILDER_UPDATE_NODE_STYLE, UIBUILDER_UPDATE_NODE_TRANSFORM,UIBUILDER_ADD_MAPPING, APP_MESSAGE} from '../constants/ActionTypes';
 import {generateId, scalePreservingOrigin, componentsFromTransform,originForNode} from '../utils/utils';
 
 const initialState = {
@@ -10,7 +10,8 @@ const initialState = {
   mappings: {}, 
   canvasdimensions: {w:0, h:0},  
   tree: {},  
-  provenance: {},
+  provenance: null,
+  datapath: {},
 };
 
 //nce we have all child ids we can then create a lookuo table to map old ids to new, then return all new.
@@ -275,19 +276,15 @@ function viz(state = initialState, action) {
   case UIBUILDER_UPDATE_NODE_TRANSFORM:
       return Object.assign({}, state, _updateNodeTransforms(state, action));
 
-  case UIBUILDER_ADD_MAPPING:
-      
+  case UIBUILDER_ADD_MAPPING:     
       const _s =  Object.assign({}, state, {mappings: Object.assign({}, state.mappings, {[action.datasourceId]: [...(state.mappings[action.datasourceId]||[]), action.map]})});
       return _s;
 
   case UIBUILDER_PROVENANCE:
       return Object.assign({}, state, {provenance:action.tree});
 
-	case APP_MESSAGE:
-    //const {id, payload} = action.payload.data;
-
-		//console.log(action.payload.data);
-		return state;
+  case UIBUILDER_RECORD_PATH:
+      return Object.assign({}, state, {datapath : action.path});
 
 	default:
 	    return state;

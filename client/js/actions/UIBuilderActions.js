@@ -1,6 +1,6 @@
 import {networkAccess, networkError, networkSuccess} from './NetworkActions';
 import request from 'superagent';
-import {UIBUILDER_INIT, UIBUILDER_PROVENANCE, UIBUILDER_REMOVE_NODE, UIBUILDER_CLONE_NODE, UIBUILDER_UPDATE_NODE_ATTRIBUTE, UIBUILDER_UPDATE_NODE_TRANSFORM, UIBUILDER_UPDATE_NODE_STYLE, UIBUILDER_ADD_MAPPING} from '../constants/ActionTypes';
+import {UIBUILDER_INIT, UIBUILDER_PROVENANCE, UIBUILDER_RECORD_PATH, UIBUILDER_REMOVE_NODE, UIBUILDER_CLONE_NODE, UIBUILDER_UPDATE_NODE_ATTRIBUTE, UIBUILDER_UPDATE_NODE_TRANSFORM, UIBUILDER_UPDATE_NODE_STYLE, UIBUILDER_ADD_MAPPING} from '../constants/ActionTypes';
 import {defaultCode, resolvePath} from '../utils/utils';
 import {hierarchy, tree as d3tree} from 'd3-hierarchy';
 
@@ -167,11 +167,7 @@ function updateNodeTransform(sourceId:number, path:Array, property:string, trans
   }
 }
 
-
-
 function addMapping(sourceId, datasourceId, map){
-
-
 	return {
 		type: UIBUILDER_ADD_MAPPING,
 		sourceId,
@@ -180,6 +176,13 @@ function addMapping(sourceId, datasourceId, map){
 	}
 }
 
+function recordPath(sourceId, path){
+  return {
+    type: UIBUILDER_RECORD_PATH,
+    sourceId,
+    path,
+  }
+}
 
 export function init(id){
 	
@@ -259,6 +262,9 @@ export function subscribeMappings(sourceId, mappings, transformers){
 	            const transformer = transformers[mappingId] || defaultCode(key,property);
 	            const transform   = Function(key, "node", "i", transformer);  
 	            dispatch(fn(sourceId, mapping.to.path,property,transform(value, node, count), enterKey, Date.now(), count));
+
+              //so that data can be interrogated!
+              dispatch(recordPath(sourceId, data.msg._path));
 	          }
 	        }
 	        dispatch(addMapping(sourceId, mappings[i].from.sourceId, {mapping:mappings[i], onData}))
@@ -267,57 +273,88 @@ export function subscribeMappings(sourceId, mappings, transformers){
 	}
 }
 
+const _hexDecode = (hex)=>{
+    var j;
+    var hexes = hex.match(/.{1,4}/g) || [];
+    var back = "";
+    for(j = 0; j<hexes.length; j++) {
+        back += String.fromCharCode(parseInt(hexes[j], 16));
+    }
+
+    return back;
+}
+
+const _flip = (node, h)=>{
+
+    if (node.children){
+     
+      return Object.assign({}, node, {
+                                          y: h - node.y,
+                                          data: Object.assign({}, node.data, {node: Object.assign({}, node.data.node, {unicode:_hexDecode(node.data.node.unicode)})}),
+                                          children: node.children.map((child)=>{
+                                            return _flip(child, h);
+                                          })
+                        });
+    }
+    return Object.assign({}, node, {
+                                      y: h - node.y,
+                                      data: Object.assign({}, node.data, {node: Object.assign({}, node.data.node, {unicode:_hexDecode(node.data.node.unicode)})})
+                                    });
+}
+
 export function nodeClicked(sourceId, tid){
-  console.log("seen show provenance for sourceId " + sourceId + " tid " + tid);
+
   
   return (dispatch, getState)=>{
-    const {mappings,nodesByKey,tree} = getState().uibuilder[sourceId];
+    const {mappings,nodesByKey,nodesById,tree} = getState().uibuilder[sourceId];
     
     /*
       TODO:need to create a lookup table here as this is very inefficient (it finds the node id of the item that relates to this template 
       - there could be many but only need one, since they are all derived from the same data path.
     */
 
-    console.log("have got tree");
-    console.log(JSON.stringify(tree,null,4));
-
-    const nodes = Object.keys(nodesByKey).reduce((acc, key)=>{
+    const nid = Object.keys(nodesByKey).reduce((acc, key)=>{
         const node = nodesByKey[key];
         if (Object.keys(node).map(k=>node[k]).filter((item)=>item===tid).length > 0){
           acc = key;
         }
         return acc;
-    },"");
+    },null);
 
+    
     const mappingIds = Object.keys(mappings).reduce((acc, key)=>{
       const item = mappings[key];
       
       item.forEach((m)=>{
-         if (m.mapping.to.path.indexOf(nodes) != -1){
+         if (m.mapping.to.path.indexOf(nid) != -1){
             acc.push(m.mapping.mappingId);
           }
       });
       return acc;
     },[]);
 
-    console.log("mapping iasd ae");
-    console.log(JSON.stringify(mappingIds,null,4));
+    if (mappingIds.length <= 0){
+      dispatch ({
+        type: UIBUILDER_PROVENANCE,
+        sourceId,
+        tree: null,
+      })
+    }
+    else{
+      //get all provenance trees!
+      const trees = mappingIds.map((item)=>tree[item]);
+      
+      const h = hierarchy(trees[0], (d)=>d.parents);
 
-    //get all provenance trees!
-    const trees = mappingIds.map((item)=>tree[item]);
-    console.log("trees are");
-    console.log(JSON.stringify(trees, null, 4));
+      const treelayout = d3tree().size([500, getState().screen.dimensions.h/3])(h);
+      
 
-    const h = hierarchy(trees[0], (d)=>d.parents);
-
-    var treelayout = d3tree().size([500, getState().screen.dimensions.h/2]);
-    var treenodes = treelayout(h);
- 
-    dispatch ({
-      type: UIBUILDER_PROVENANCE,
-      sourceId,
-      tree: treenodes,
-    })
+      dispatch ({
+        type: UIBUILDER_PROVENANCE,
+        sourceId,
+        tree: _flip(treelayout, getState().screen.dimensions.h/3),
+      })
+    }
   }
 
 }

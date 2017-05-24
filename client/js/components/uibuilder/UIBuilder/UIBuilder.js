@@ -15,15 +15,18 @@ const _link = (d)=>{
 const _links = (node)=>{
   if (node.children){
       return _flatten(node.children.map((child)=>{
+         
           return [
                   {
                       source: {
                         x:node.x,
-                        y:node.y
+                        y:node.y, 
+                        nid: node.data.node.nid,
                       }, 
                       target: {
                         x:child.x, 
-                        y:child.y
+                        y:child.y,
+                        nid:child.data.node.nid,
                       }
                   },
                   ..._links(child)]
@@ -35,6 +38,17 @@ const _links = (node)=>{
 const _flatten = list => list.reduce(
     (a, b) => a.concat(Array.isArray(b) ? _flatten(b) : b), []
 );
+
+
+const _datafor = (link, datapath)=>{
+  return datapath.hops.reduce((acc, item)=>{
+    //console.log(`checking ${link.target.nid}->${link.source.nid} against ${item.source}->${item.target}`)
+    if (item.source === link.target.nid && item.target === link.source.nid){
+      return datapath.data[item.msg];
+    }
+    return acc;
+  },{});
+}
 
 class UIBuilder extends Component {
 
@@ -50,35 +64,77 @@ class UIBuilder extends Component {
 
   renderTreeNodes(node){
 
+      const NODEWIDTH  = 40;
+      const NODEHEIGHT = 40;
+
       const children = node.children ?  node.children.map((child)=>{
           return this.renderTreeNodes(child);       
       }) : null;
 
-      return <g>
-                <circle cx={node.x} cy={node.y} r={20} fill="white" stroke="black"/>
-                {children}
-             </g>  
+      const mainrectprops = {
+        fill:  node.data ? node.data.node.color : 'black',
+        width: NODEWIDTH,
+        height: NODEHEIGHT,
+        x: node.x - NODEWIDTH /2,
+        y: node.y - NODEHEIGHT/2,
+      };
+
+      const textprops = {
+        y: node.y + 10,
+        x: node.x,
+      }
+
+      const icontxt = node.data ? node.data.node.unicode : '\uf040'
+      
+      const iconstyle = {
+          fontFamily: 'FontAwesome',
+          fontSize: 30,
+          fill: 'white',
+          textAnchor: 'middle',
+          WebkitTouchCallout: 'none',
+          WebkitUserSelect: 'none',   
+          KhtmlUserSelect: 'none',   
+          MozUserSelect: 'none',   
+          MsUserSelect: 'none',       
+          userSelect: 'none',  
+      }
+    
+      return  <g key={node.data.node.nid}>
+                  <rect className="node" {...mainrectprops}></rect>
+                  <text style={iconstyle} {...textprops}>{icontxt}</text>
+                  {children}
+              </g>
+
   }
 
   renderTreeLinks(node){
       const links = _links(node);
-      return links.map((link)=>{
-          return <path style={{fill:"none", stroke:"black", strokeWidth:2}} d={_link(link)}/>
+      return links.map((link, i)=>{
+          return <path key={i} style={{fill:"none", stroke:"black", strokeWidth:2}} d={_link(link)}/>
       });
+  }
+
+  renderTreeData(node){
+     const {datapath} = this.props; 
+     const links = _links(node);
+
+     return links.map((link, i)=>{
+        const data = JSON.stringify(_datafor(link, datapath));
+        console.log("rendring data");
+        console.log(data);
+        return <text key={i} x={(link.source.x-link.target.x)/2} y={(link.source.y-link.target.y)/2}>{data}</text>
+     });
   }
 
   renderTree(){
       const {provenance} = this.props;
     
-      return <g>
-                <g transform={"translate(0,100)"}>
+      return    <g transform={"translate(0,100)"}>
                   {this.renderTreeLinks(provenance)}
-                </g>
-                <g transform={"translate(0,100)"}>
                   {this.renderTreeNodes(provenance)}
-                </g>
-                
-            </g>
+                  {this.renderTreeData(provenance)}
+                </g>      
+          
   }
 
   renderNode(sourceId, node){
@@ -135,7 +191,7 @@ class UIBuilder extends Component {
 
   render() {
 
-  	const {canvasdimensions, dimensions:{w,h}} = this.props;
+  	const {canvasdimensions, dimensions:{w,h}, provenance} = this.props;
     
     return  <div>
               <div className="canvas" style={{width:"100%", height:"100%"}}>
@@ -143,11 +199,11 @@ class UIBuilder extends Component {
     		          {this.renderNodes()}	
     	          </svg>
               </div>
-              <div style={{top: 0, right: 0, background:"grey", opacity:0.8, position:"absolute", height:h, w:500}}>
+              {provenance && <div style={{top: 0, right: 0, background:"grey", opacity:0.8, position:"absolute", height:h, w:500}}>
                   <svg width={500} height={h}>
                     {this.renderTree()}
                   </svg>
-              </div>
+              </div>}
             </div>
   }
 }
@@ -161,6 +217,7 @@ function select(state, newProps) {
     nodes: state.uibuilder[newProps.sourceId] ? state.uibuilder[newProps.sourceId].nodes : [],
     provenance: state.uibuilder[newProps.sourceId] ? state.uibuilder[newProps.sourceId].provenance : {},
     nodesById: state.uibuilder[newProps.sourceId] ? state.uibuilder[newProps.sourceId].nodesById : {},
+    datapath: state.uibuilder[newProps.sourceId] ? state.uibuilder[newProps.sourceId].datapath : {},
   };
 }
 
