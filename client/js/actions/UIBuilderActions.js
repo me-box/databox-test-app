@@ -3,7 +3,7 @@ import request from 'superagent';
 import {UIBUILDER_INIT, UIBUILDER_PROVENANCE, UIBUILDER_RECORD_PATH, UIBUILDER_REMOVE_NODE, UIBUILDER_CLONE_NODE, UIBUILDER_UPDATE_NODE_ATTRIBUTE, UIBUILDER_UPDATE_NODE_TRANSFORM, UIBUILDER_UPDATE_NODE_STYLE, UIBUILDER_ADD_MAPPING} from '../constants/ActionTypes';
 import {defaultCode, resolvePath} from '../utils/utils';
 import {hierarchy, tree as d3tree} from 'd3-hierarchy';
-
+import {TREEPADDING, TREEMARGIN} from '../constants/ViewConstants';
 
 
 const _function_for = {
@@ -176,11 +176,12 @@ function addMapping(sourceId, datasourceId, map){
 	}
 }
 
-function recordPath(sourceId, path){
+function recordPath(sourceId, mappingId, data){
   return {
     type: UIBUILDER_RECORD_PATH,
     sourceId,
-    path,
+    mappingId,
+    data,
   }
 }
 
@@ -263,8 +264,8 @@ export function subscribeMappings(sourceId, mappings, transformers){
 	            const transform   = Function(key, "node", "i", transformer);  
 	            dispatch(fn(sourceId, mapping.to.path,property,transform(value, node, count), enterKey, Date.now(), count));
 
-              //so that data can be interrogated!
-              dispatch(recordPath(sourceId, data.msg._path));
+              //so that data can be interrogated
+              dispatch(recordPath(sourceId, mappingId, data.msg));
 	          }
 	        }
 	        dispatch(addMapping(sourceId, mappings[i].from.sourceId, {mapping:mappings[i], onData}))
@@ -342,17 +343,29 @@ export function nodeClicked(sourceId, tid){
     }
     else{
       //get all provenance trees!
-      const trees = mappingIds.map((item)=>tree[item]);
-      
-      const h = hierarchy(trees[0], (d)=>d.parents);
 
-      const treelayout = d3tree().size([500, getState().screen.dimensions.h/3])(h);
+      const forestheight = getState().screen.dimensions.h - (mappingIds.length * TREEPADDING) - TREEMARGIN;
+      const treeheight    = forestheight / mappingIds.length; 
+
+      const trees = mappingIds.map((item)=>{
+          const _tree = tree[item];
+          const h = hierarchy(_tree, (d)=>d.parents);
+          const layout = d3tree().size([500, treeheight])(h);
+
+          return{
+            mappingId: item,
+            tree: _flip(layout, treeheight),
+          }
+      });
       
 
+      console.log("built trees!");
+      console.log(trees);
+    
       dispatch ({
         type: UIBUILDER_PROVENANCE,
         sourceId,
-        tree: _flip(treelayout, getState().screen.dimensions.h/3),
+        trees: trees,
       })
     }
   }

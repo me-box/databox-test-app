@@ -10,7 +10,7 @@ const initialState = {
   mappings: {}, 
   canvasdimensions: {w:0, h:0},  
   tree: {},  
-  provenance: null,
+  provenance: [],
   datapath: {},
 };
 
@@ -281,10 +281,10 @@ function viz(state = initialState, action) {
       return _s;
 
   case UIBUILDER_PROVENANCE:
-      return Object.assign({}, state, {provenance:action.tree});
+      return Object.assign({}, state, {provenance:action.trees});
 
   case UIBUILDER_RECORD_PATH:
-      return Object.assign({}, state, {datapath : action.path});
+      return Object.assign({}, state, {datapath : Object.assign({}, state.datapath, {[action.mappingId]:{path: action.data._path, result:action.data}})});
 
 	default:
 	    return state;

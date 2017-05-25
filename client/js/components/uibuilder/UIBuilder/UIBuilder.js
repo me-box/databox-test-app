@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import {Circle,Ellipse,Text,Rect,Line,Path,Group} from '../svg/';
 import {init} from '../../../actions/UIBuilderActions';
-
+import {TREEPADDING, TREEMARGIN, NODEWIDTH, NODEHEIGHT} from '../../../constants/ViewConstants';
 
 const _link = (d)=>{
   return "M" + d.source.x + "," + d.source.y
@@ -54,7 +54,8 @@ class UIBuilder extends Component {
 
   constructor(props, context){
   	super(props, context);
-    this.renderTree = this.renderTree.bind(this);
+    this.renderTrees = this.renderTrees.bind(this);
+    this.state = {datalink:null}
   }	
 
   componentDidMount(){
@@ -62,10 +63,49 @@ class UIBuilder extends Component {
     dispatch(init(sourceId));
   }
 
+  renderTrees(){
+      const {provenance, dimensions:{w,h}} = this.props;
+      const containerheight = (h-TREEMARGIN)/provenance.length;
+      const treeheight = (containerheight-TREEPADDING) + NODEHEIGHT;
+
+      const trees = provenance.map((p, i)=>{
+        
+        const datastyle = {
+          position : 'absolute',
+          background: 'blue',
+          margin:0,
+          padding: 0,
+          top : TREEMARGIN  + (i * containerheight) + treeheight,
+          width: 500,
+          height: containerheight - treeheight,
+          opacity: 0.6,
+        }
+
+        return  <div style={{background:'green'}}>
+                  <svg key={i} width={500} height={containerheight}>
+                      <g key={p.mappingId} transform={`translate (0,${NODEHEIGHT/2})`}>
+                       {this.renderTreeLinks(p.tree)}
+                       {this.renderTreeNodes(p.tree)}
+                       {this.renderTreeData(p.tree)}
+                      </g>  
+                  </svg>
+                  <div style={datastyle}>
+                    
+                  </div>
+                </div>
+                
+      });      
+      
+      return  <div style={{marginTop:TREEMARGIN}}>
+                {trees}
+              </div>
+
+      
+
+  }
   renderTreeNodes(node){
 
-      const NODEWIDTH  = 40;
-      const NODEHEIGHT = 40;
+    
 
       const children = node.children ?  node.children.map((child)=>{
           return this.renderTreeNodes(child);       
@@ -77,6 +117,8 @@ class UIBuilder extends Component {
         height: NODEHEIGHT,
         x: node.x - NODEWIDTH /2,
         y: node.y - NODEHEIGHT/2,
+        stroke: "#fff",
+        strokeWidth:2,
       };
 
       const textprops = {
@@ -115,26 +157,44 @@ class UIBuilder extends Component {
   }
 
   renderTreeData(node){
-     const {datapath} = this.props; 
+     
      const links = _links(node);
 
      return links.map((link, i)=>{
-        const data = JSON.stringify(_datafor(link, datapath));
-        console.log("rendring data");
-        console.log(data);
-        return <text key={i} x={(link.source.x-link.target.x)/2} y={(link.source.y-link.target.y)/2}>{data}</text>
+        
+        
+        
+        const props = {
+          cx: link.target.x + (link.source.x-link.target.x)/2,
+          cy: link.target.y + (link.source.y-link.target.y)/2,
+          r:10,
+        }
+
+        const style ={
+          fill: 'white',
+          stroke: 'black',
+        }
+
+        return <circle onClick={()=>{this.setState({datalink:link})}} key={i} {...props} style={style}></circle>
+        //return <text key={i} x={(link.source.x-link.target.x)/2} y={(link.source.y-link.target.y)/2}>{data}</text>
      });
   }
 
-  renderTree(){
-      const {provenance} = this.props;
-    
-      return    <g transform={"translate(0,100)"}>
-                  {this.renderTreeLinks(provenance)}
-                  {this.renderTreeNodes(provenance)}
-                  {this.renderTreeData(provenance)}
-                </g>      
-          
+  
+
+  renderData(){
+    if (this.state.datalink){
+      const {datapath: {path, result}} = this.props; 
+      const data = _datafor(this.state.datalink, path);
+
+      const datastr = JSON.stringify(data.payload ? data.payload : data, null, 4);
+      const finalstr = JSON.stringify(result.payload, null, 4);
+      return <div>
+                  <pre>{datastr}</pre>
+                  <pre>{finalstr}</pre>
+              </div>
+    }
+    return null;
   }
 
   renderNode(sourceId, node){
@@ -191,6 +251,7 @@ class UIBuilder extends Component {
 
   render() {
 
+    //just need the actual data here as this is the final thing to come out!
   	const {canvasdimensions, dimensions:{w,h}, provenance} = this.props;
     
     return  <div>
@@ -199,10 +260,8 @@ class UIBuilder extends Component {
     		          {this.renderNodes()}	
     	          </svg>
               </div>
-              {provenance && <div style={{top: 0, right: 0, background:"grey", opacity:0.8, position:"absolute", height:h, w:500}}>
-                  <svg width={500} height={h}>
-                    {this.renderTree()}
-                  </svg>
+              {provenance.length > 0 && <div style={{top: 0, right: 0, background:"#e3e3e3", opacity:0.95, position:"absolute", height:h, w:500}}>
+                  {this.renderTrees()}
               </div>}
             </div>
   }
@@ -215,7 +274,7 @@ function select(state, newProps) {
     dimensions: state.screen.dimensions,
     canvasdimensions: state.uibuilder[newProps.sourceId] ? state.uibuilder[newProps.sourceId].canvasdimensions : {w:0,h:0},
     nodes: state.uibuilder[newProps.sourceId] ? state.uibuilder[newProps.sourceId].nodes : [],
-    provenance: state.uibuilder[newProps.sourceId] ? state.uibuilder[newProps.sourceId].provenance : {},
+    provenance: state.uibuilder[newProps.sourceId] ? state.uibuilder[newProps.sourceId].provenance : [],
     nodesById: state.uibuilder[newProps.sourceId] ? state.uibuilder[newProps.sourceId].nodesById : {},
     datapath: state.uibuilder[newProps.sourceId] ? state.uibuilder[newProps.sourceId].datapath : {},
   };
