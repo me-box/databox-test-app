@@ -55,7 +55,7 @@ class UIBuilder extends Component {
   constructor(props, context){
   	super(props, context);
     this.renderTrees = this.renderTrees.bind(this);
-    this.state = {datalink:null}
+    this.state = {datalink:{}};
   }	
 
   componentDidMount(){
@@ -69,7 +69,7 @@ class UIBuilder extends Component {
       const treeheight = (containerheight-TREEPADDING) + NODEHEIGHT;
 
       const trees = provenance.map((p, i)=>{
-        
+
         const datastyle = {
           position : 'absolute',
           background: 'blue',
@@ -81,16 +81,25 @@ class UIBuilder extends Component {
           opacity: 0.6,
         }
 
+        const link = this.state.datalink[p.mappingId];
+        let data = null;
+
+        if (link && this.props.datapath[p.sourceId]){
+            data = _datafor(link,  this.props.datapath[p.sourceId].path);
+        }
+
         return  <div style={{background:'green'}}>
                   <svg key={i} width={500} height={containerheight}>
                       <g key={p.mappingId} transform={`translate (0,${NODEHEIGHT/2})`}>
                        {this.renderTreeLinks(p.tree)}
                        {this.renderTreeNodes(p.tree)}
-                       {this.renderTreeData(p.tree)}
+                       {this.renderTreeData(p.tree, p.mappingId)}
                       </g>  
                   </svg>
                   <div style={datastyle}>
-                    
+                      <pre>
+                        {data && JSON.stringify(data.payload ? data.payload:data, null, 4)}
+                      </pre>
                   </div>
                 </div>
                 
@@ -104,8 +113,6 @@ class UIBuilder extends Component {
 
   }
   renderTreeNodes(node){
-
-    
 
       const children = node.children ?  node.children.map((child)=>{
           return this.renderTreeNodes(child);       
@@ -156,14 +163,12 @@ class UIBuilder extends Component {
       });
   }
 
-  renderTreeData(node){
+  renderTreeData(node, mappingId){
      
      const links = _links(node);
 
      return links.map((link, i)=>{
-        
-        
-        
+  
         const props = {
           cx: link.target.x + (link.source.x-link.target.x)/2,
           cy: link.target.y + (link.source.y-link.target.y)/2,
@@ -175,8 +180,7 @@ class UIBuilder extends Component {
           stroke: 'black',
         }
 
-        return <circle onClick={()=>{this.setState({datalink:link})}} key={i} {...props} style={style}></circle>
-        //return <text key={i} x={(link.source.x-link.target.x)/2} y={(link.source.y-link.target.y)/2}>{data}</text>
+        return <circle onClick={()=>{this.setState({datalink:{[mappingId]:link}})}} key={i} {...props} style={style}></circle>
      });
   }
 

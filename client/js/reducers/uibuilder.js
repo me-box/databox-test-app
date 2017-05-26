@@ -283,8 +283,9 @@ function viz(state = initialState, action) {
   case UIBUILDER_PROVENANCE:
       return Object.assign({}, state, {provenance:action.trees});
 
+  //record by mapping id so that the paths taken to create this mapping are not lost when new data comes in.
   case UIBUILDER_RECORD_PATH:
-      return Object.assign({}, state, {datapath : Object.assign({}, state.datapath, {[action.mappingId]:{path: action.data._path, result:action.data}})});
+      return Object.assign({}, state, {datapath : Object.assign({}, state.datapath, {[action.datasourceId]:{path: action.data}})});
 
 	default:
 	    return state;

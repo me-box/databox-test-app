@@ -176,11 +176,11 @@ function addMapping(sourceId, datasourceId, map){
 	}
 }
 
-function recordPath(sourceId, mappingId, data){
+function recordPath(sourceId, datasourceId, data){
   return {
     type: UIBUILDER_RECORD_PATH,
     sourceId,
-    mappingId,
+    datasourceId,
     data,
   }
 }
@@ -238,6 +238,7 @@ export function subscribeMappings(sourceId, mappings, transformers){
 
 	        const onData = (data, count, mapping)=>{
 	         
+           
             const {nodesByKey={}, nodesById={}, templatesById={}} = getState().uibuilder[sourceId];
 	          const {mappingId, from: {key},  to:{property}} = mapping;
 	          const template = templatesById[mapping.to.path[mapping.to.path.length-1]];
@@ -263,9 +264,7 @@ export function subscribeMappings(sourceId, mappings, transformers){
 	            const transformer = transformers[mappingId] || defaultCode(key,property);
 	            const transform   = Function(key, "node", "i", transformer);  
 	            dispatch(fn(sourceId, mapping.to.path,property,transform(value, node, count), enterKey, Date.now(), count));
-
-              //so that data can be interrogated
-              dispatch(recordPath(sourceId, mappingId, data.msg));
+              dispatch(recordPath(sourceId, mapping.from.sourceId, data.msg._path));
 	          }
 	        }
 	        dispatch(addMapping(sourceId, mappings[i].from.sourceId, {mapping:mappings[i], onData}))
@@ -326,11 +325,14 @@ export function nodeClicked(sourceId, tid){
     const mappingIds = Object.keys(mappings).reduce((acc, key)=>{
       const item = mappings[key];
       
+      //add sourceId
+      
       item.forEach((m)=>{
          if (m.mapping.to.path.indexOf(nid) != -1){
-            acc.push(m.mapping.mappingId);
+            acc.push({mappingId: m.mapping.mappingId, sourceId: m.mapping.from.sourceId});
           }
       });
+      
       return acc;
     },[]);
 
@@ -348,19 +350,18 @@ export function nodeClicked(sourceId, tid){
       const treeheight    = forestheight / mappingIds.length; 
 
       const trees = mappingIds.map((item)=>{
-          const _tree = tree[item];
+          const _tree = tree[item.mappingId];
           const h = hierarchy(_tree, (d)=>d.parents);
           const layout = d3tree().size([500, treeheight])(h);
 
           return{
-            mappingId: item,
+            mappingId: item.mappingId,
+            sourceId: item.sourceId,
+            //sourceId
             tree: _flip(layout, treeheight),
           }
       });
-      
-
-      console.log("built trees!");
-      console.log(trees);
+    
     
       dispatch ({
         type: UIBUILDER_PROVENANCE,
