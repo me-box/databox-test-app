@@ -281,6 +281,9 @@ function viz(state = initialState, action) {
       return _s;
 
   case UIBUILDER_PROVENANCE:
+      console.log("set provenance to ");
+      console.log(action.trees);
+      
       return Object.assign({}, state, {provenance:action.trees});
 
   //record by mapping id so that the paths taken to create this mapping are not lost when new data comes in.

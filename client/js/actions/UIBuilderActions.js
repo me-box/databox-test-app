@@ -274,6 +274,10 @@ export function subscribeMappings(sourceId, mappings, transformers){
 }
 
 const _hexDecode = (hex)=>{
+    if (!hex){
+      return '';
+    }
+
     var j;
     var hexes = hex.match(/.{1,4}/g) || [];
     var back = "";
@@ -340,17 +344,19 @@ export function nodeClicked(sourceId, tid){
       dispatch ({
         type: UIBUILDER_PROVENANCE,
         sourceId,
-        tree: null,
+        trees: null,
       })
     }
     else{
       //get all provenance trees!
 
-      const forestheight = getState().screen.dimensions.h - (mappingIds.length * TREEPADDING) - TREEMARGIN;
-      const treeheight    = forestheight / mappingIds.length; 
+      //const forestheight = getState().screen.dimensions.h - (mappingIds.length * TREEPADDING) - TREEMARGIN;
+      //const treeheight    = forestheight / mappingIds.length; 
+      const treeheight = getState().screen.dimensions.h * 0.6 - TREEMARGIN;
 
       const trees = mappingIds.map((item)=>{
-          const _tree = tree[item.mappingId];
+        
+          const _tree = {node: {category:"result"}, parents:[tree[item.mappingId]]};
           const h = hierarchy(_tree, (d)=>d.parents);
           const layout = d3tree().size([500, treeheight])(h);
 
