@@ -4,6 +4,8 @@ import thunk from 'redux-thunk';
 import rootReducer from '../reducers';
 import DevTools from '../containers/DevTools';
 
+
+console.log("Am using DEV STORE!!");
 const enhancer = compose(
   applyMiddleware(thunk),
   DevTools.instrument(),

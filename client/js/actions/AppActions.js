@@ -72,7 +72,7 @@ export function init(id){
 
 
 export function newMessage(msg) {
-  
+  console.log("new message");
   if (!msg)
     return;
   

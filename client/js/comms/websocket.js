@@ -26,6 +26,7 @@ export default function init(namespace, appId, dispatch) {
   			console.log("not leaving this channel as only just joined!");
   		}
   	}
+
     dispatch(newMessage(data));
   });
   

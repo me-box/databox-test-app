@@ -306,16 +306,20 @@ const _flip = (node, h)=>{
                                     });
 }
 
-export function nodeClicked(sourceId, tid){
+export function nodeClicked(){
+
+}
+
+/*export function nodeClicked(sourceId, tid){
 
   
   return (dispatch, getState)=>{
     const {mappings,nodesByKey,nodesById,tree} = getState().uibuilder[sourceId];
     
-    /*
-      TODO:need to create a lookup table here as this is very inefficient (it finds the node id of the item that relates to this template 
-      - there could be many but only need one, since they are all derived from the same data path.
-    */
+    //
+    //  TODO:need to create a lookup table here as this is very inefficient (it finds the node id of the item that relates to this template 
+    //  - there could be many but only need one, since they are all derived from the same data path.
+    
 
     const nid = Object.keys(nodesByKey).reduce((acc, key)=>{
         const node = nodesByKey[key];
@@ -377,4 +381,4 @@ export function nodeClicked(sourceId, tid){
     }
   }
 
-}
+}*/
