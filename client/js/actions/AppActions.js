@@ -72,7 +72,7 @@ export function init(id){
 
 
 export function newMessage(msg) {
-  console.log("new message");
+
   if (!msg)
     return;
   
@@ -86,8 +86,7 @@ export function newMessage(msg) {
 
     const {sourceId, payload={}} = msg;
     const {id, name, view, data={}} = payload;
-   
-    console.log("msg: " + sourceId);
+  
 
     if (!inited[id]){
         inited[id] = true;

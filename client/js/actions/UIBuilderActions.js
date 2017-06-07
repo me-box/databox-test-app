@@ -1,6 +1,6 @@
 import {networkAccess, networkError, networkSuccess} from './NetworkActions';
 import request from 'superagent';
-import {UIBUILDER_INIT, UIBUILDER_PROVENANCE, UIBUILDER_RECORD_PATH, UIBUILDER_REMOVE_NODE, UIBUILDER_CLONE_NODE, UIBUILDER_UPDATE_NODE_ATTRIBUTE, UIBUILDER_UPDATE_NODE_TRANSFORM, UIBUILDER_UPDATE_NODE_STYLE, UIBUILDER_ADD_MAPPING} from '../constants/ActionTypes';
+import {UIBUILDER_INIT, UIBUILDER_PROVENANCE, UIBUILDER_PROVENANCE_SELECT_MAPPING, UIBUILDER_RECORD_PATH, UIBUILDER_REMOVE_NODE, UIBUILDER_CLONE_NODE, UIBUILDER_UPDATE_NODE_ATTRIBUTE, UIBUILDER_UPDATE_NODE_TRANSFORM, UIBUILDER_UPDATE_NODE_STYLE, UIBUILDER_ADD_MAPPING} from '../constants/ActionTypes';
 import {defaultCode, resolvePath} from '../utils/utils';
 import {hierarchy, tree as d3tree} from 'd3-hierarchy';
 import {TREEPADDING, TREEMARGIN} from '../constants/ViewConstants';
@@ -176,12 +176,22 @@ function addMapping(sourceId, datasourceId, map){
 	}
 }
 
-function recordPath(sourceId, datasourceId, data){
+function recordPath(sourceId, mappingId, datasourceId, data, result){
   return {
     type: UIBUILDER_RECORD_PATH,
     sourceId,
+    mappingId,
     datasourceId,
     data,
+    result,
+  }
+}
+
+export function selectMapping(sourceId, mapping){
+   return {
+    type: UIBUILDER_PROVENANCE_SELECT_MAPPING,
+    sourceId,
+    mapping,
   }
 }
 
@@ -262,9 +272,10 @@ export function subscribeMappings(sourceId, mappings, transformers){
               //unsubscribe this mapping?
 	          }else if (shouldenter){
 	            const transformer = transformers[mappingId] || defaultCode(key,property);
-	            const transform   = Function(key, "node", "i", transformer);  
-	            dispatch(fn(sourceId, mapping.to.path,property,transform(value, node, count), enterKey, Date.now(), count));
-              dispatch(recordPath(sourceId, mapping.from.sourceId, data.msg._path));
+	            const transform   = Function(key, "node", "i", transformer)(value, node, count);  
+
+	            dispatch(fn(sourceId, mapping.to.path,property,transform, enterKey, Date.now(), count));
+              dispatch(recordPath(sourceId, mappingId, mapping.from.sourceId, data.msg._path, transform));
 	          }
 	        }
 	        dispatch(addMapping(sourceId, mappings[i].from.sourceId, {mapping:mappings[i], onData}))
@@ -306,11 +317,7 @@ const _flip = (node, h)=>{
                                     });
 }
 
-export function nodeClicked(){
-
-}
-
-/*export function nodeClicked(sourceId, tid){
+export function nodeClicked(sourceId, tid){
 
   
   return (dispatch, getState)=>{
@@ -371,8 +378,7 @@ export function nodeClicked(){
             tree: _flip(layout, treeheight),
           }
       });
-    
-    
+     
       dispatch ({
         type: UIBUILDER_PROVENANCE,
         sourceId,
@@ -380,5 +386,4 @@ export function nodeClicked(){
       })
     }
   }
-
-}*/
+}

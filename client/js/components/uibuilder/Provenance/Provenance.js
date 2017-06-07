@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import {TREEPADDING, TREEMARGIN, NODEWIDTH, NODEHEIGHT} from '../../../constants/ViewConstants';
-import { Flex, Box } from 'reflexbox'
+import { Flex, Box } from 'reflexbox';
+import {selectMapping} from '../../../actions/UIBuilderActions';
+import { bindActionCreators } from 'redux';
 
 const _link = (d)=>{
   return "M" + d.source.x + "," + d.source.y
@@ -53,14 +55,14 @@ class Provenance extends Component {
 
   constructor(props, context){
     super(props, context);
-    this._mapping = this._mapping.bind(this);
     this.state = {datalink:null, mapping: {}};
+    this.selectMapping = bindActionCreators(selectMapping, this.props.dispatch);
   } 
 
-  _mapping(){
+  /*_mapping(){
     const {provenance} = this.props;
 
-    if (this.state.mapping && Object.keys(this.state.mapping) > 0){
+    if (this.state.mapping && Object.keys(this.state.mapping).length > 0){
       return this.state.mapping;
     }
 
@@ -69,14 +71,14 @@ class Provenance extends Component {
     }
 
     return {};
-  }
+  }*/
 
 
   renderTree(){
     const {provenance, dimensions:{h}, w} = this.props;
     const treeheight = h * 0.6;
     const containerheight = treeheight + NODEHEIGHT;
-    const {mappingId} = this._mapping();
+    const {mappingId} = this.props.selectedMapping; //this._mapping();
 
     if (mappingId){
         
@@ -92,6 +94,7 @@ class Provenance extends Component {
               <g transform={`translate (0,${TREEMARGIN + NODEHEIGHT/2})`}>
                {this.renderTreeLinks(tree)}
                {this.renderTreeNodes(tree)}
+               {this.renderResult()}
                {this.renderTreeData(tree)}
               </g>  
           </svg>
@@ -100,28 +103,70 @@ class Provenance extends Component {
     return null;
   }
 
+  renderResult(){
+      const {provenance, dimensions:{h}, w} = this.props;
+
+    
+      const {mappingId, sourceId} = this.props.selectedMapping;
+
+      const result = this.props.datapath[sourceId] ? this.props.datapath[sourceId].result[mappingId] || "-" : "-";
+
+      const treeheight = h * 0.6;
+
+      const resultstyle = {
+        textAnchor: 'middle',
+      }
+      return <g transform={`translate(0,${treeheight-NODEHEIGHT/2})`}>
+                <text style={resultstyle} x={w/2} y={0}> {result} </text>
+             </g>
+  }
+
+
   renderTreeNodes(node){
+
+      if (!node.data || !node.data.node){
+        return null;
+      }
 
       const children = node.children ?  node.children.map((child)=>{
           return this.renderTreeNodes(child);       
       }) : null;
+    
+      let mainrectprops = {
+          fill: "white",
+          width: NODEWIDTH,
+          height: NODEHEIGHT,
+          x: node.x - NODEWIDTH /2,
+          y: node.y - NODEHEIGHT/2,
+          stroke: "#454545",
+          strokeWidth: 2,
+      }
 
-      const mainrectprops = {
-        fill:  node.data ? node.data.node.color || 'white' : 'white',
-        width: NODEWIDTH,
-        height: NODEHEIGHT,
-        x: node.x - NODEWIDTH /2,
-        y: node.y - NODEHEIGHT/2,
-        stroke: "#454545",
-        strokeWidth:2,
-      };
+     
+
+      if (node.data.node.category === "result"){
+            mainrectprops = {
+              ...mainrectprops,
+              x: node.x - this.props.w/2,
+              width: this.props.w,
+              stroke: "none",
+              strokeWidth: 0,
+            }
+      }
+      else{
+          mainrectprops = {
+            ...mainrectprops,
+            fill: node.data.node.color,
+          }
+      }
+      
 
       const textprops = {
         y: node.y + 10,
         x: node.x,
       }
 
-      const icontxt = node.data ? node.data.node.unicode : '\uf040'
+      const icontxt = node.data.node.unicode || '\uf040'
       
       const iconstyle = {
           fontFamily: 'FontAwesome',
@@ -135,7 +180,7 @@ class Provenance extends Component {
           MsUserSelect: 'none',       
           userSelect: 'none',  
       }
-    
+
       return  <g key={node.data.node.nid}>
                   <rect className="node" {...mainrectprops}></rect>
                   <text style={iconstyle} {...textprops}>{icontxt}</text>
@@ -153,8 +198,8 @@ class Provenance extends Component {
 
   renderTreeData(node){
      
-     const {mappingId} = this._mapping();
-     const links = _links(node);
+     const {mappingId} = this.props.selectedMapping;
+     const [first, ...links] = _links(node)
 
      return links.map((link, i)=>{
   
@@ -184,7 +229,7 @@ class Provenance extends Component {
       return null;
     }
 
-    const {mappingId, sourceId} = this._mapping();
+    const {mappingId, sourceId} = this.props.selectedMapping;
 
     if (mappingId && sourceId){
 
@@ -218,10 +263,10 @@ class Provenance extends Component {
   }
 
   renderMenu(){
-      const {provenance} = this.props;
+      const {provenance, sourceId} = this.props;
       
       const menuItems = provenance.map((mapping, i)=>{
-          return <Box onClick={()=>{this.setState({mapping: {mappingId: mapping.mappingId, sourceId: mapping.sourceId}})}} key={i} p={3} auto>
+          return <Box onClick={()=>{this.selectMapping(sourceId, {mappingId: mapping.mappingId, sourceId: mapping.sourceId})}} key={i} p={3} auto>
                       <div style={{textAlign:"center"}}>
                         {mapping.mappingId}
                       </div>
@@ -230,7 +275,7 @@ class Provenance extends Component {
       })
 
       
-      return <Flex align="center" justify="space-around">
+      return <Flex align="center" style={{overflow:'auto'}}>
                {menuItems}
              </Flex>
   }
@@ -250,7 +295,7 @@ class Provenance extends Component {
     const {provenance, dimensions:{h}, w} = this.props;
     
     if (provenance && provenance.length > 0){
-      return  <div style={{top: 0, right: 0, background:"#e3e3e3", opacity:0.95, position:"absolute", height:h, w:w}}>    
+      return  <div style={{top: 0, right: 0, background:"#e3e3e3", opacity:0.95, position:"absolute", height:h, width:w}}>    
                   {this.renderMenu()}
                   {this.renderTree()}
                   {this.renderData()}
@@ -266,6 +311,8 @@ function select(state, newProps) {
     dimensions: state.screen.dimensions,
     provenance: state.uibuilder[newProps.sourceId] ? state.uibuilder[newProps.sourceId].provenance ? state.uibuilder[newProps.sourceId].provenance : [] : [],
     datapath: state.uibuilder[newProps.sourceId] ? state.uibuilder[newProps.sourceId].datapath : {},
+    selectedMapping: state.uibuilder[newProps.sourceId] ? state.uibuilder[newProps.sourceId].selectedMapping : null,
+    selectedSource: state.uibuilder[newProps.sourceId] ? state.uibuilder[newProps.sourceId].selectedSource: null,
   };
 }
 
