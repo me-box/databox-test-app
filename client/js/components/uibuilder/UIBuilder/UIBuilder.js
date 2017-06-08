@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import {Circle,Ellipse,Text,Rect,Line,Path,Group} from '../svg/';
-import {init} from '../../../actions/UIBuilderActions';
+import {init, closeProvenance} from '../../../actions/UIBuilderActions';
 import Provenance from '../Provenance/';
 
 class UIBuilder extends Component {
@@ -10,6 +10,7 @@ class UIBuilder extends Component {
   constructor(props, context){
   	super(props, context);
     this.state={showprovenance:false}
+    this.closeProvenance = bindActionCreators(closeProvenance, props.dispatch);
   }	
 
   componentDidMount(){
@@ -73,7 +74,7 @@ class UIBuilder extends Component {
   render() {
 
     //just need the actual data here as this is the final thing to come out!
-  	const {canvasdimensions, dimensions:{w,h}, provenance} = this.props;
+  	const {canvasdimensions, dimensions:{w,h}, sourceId} = this.props;
     
     return  <div>
               <div className="canvas" style={{width:"100%", height:"100%"}}>
@@ -81,7 +82,7 @@ class UIBuilder extends Component {
     		          {this.renderNodes()}	
     	          </svg>
               </div>
-             <Provenance sourceId={this.props.sourceId} w={500}/>
+             <Provenance sourceId={this.props.sourceId} w={500} close={()=>{this.closeProvenance(sourceId)}}/>
             </div>
   }
 }

@@ -299,6 +299,7 @@ function viz(state = initialState, action) {
                 selectedMapping: {mappingId: action.mapping.mappingId, sourceId: action.mapping.sourceId}
              }
 
+  
   //record by mapping id so that the paths taken to create this mapping are not lost when new data comes in.
   case UIBUILDER_RECORD_PATH:
       

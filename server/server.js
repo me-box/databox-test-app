@@ -2,6 +2,7 @@ import http  from 'http';
 import express from 'express';
 import expressSession from 'express-session';
 import connectmongostore from 'connect-mongostore';
+//import connectredis from 'connect-redis';
 import bodyparser from 'body-parser';
 import config from './config';
 import websocketinit from './comms/websocket';
@@ -11,16 +12,24 @@ import mongoose from 'mongoose';
 import ipcinit from './comms/ipc';
 import {lookup} from './datastore';
 const MongoStore = connectmongostore(expressSession);
+//const RedisStore         = connectredis(expressSession);
 mongoose.connect(config.mongo.url);
 
+//NOTE - HAVE FOUND THAT connectmongostore doesn't work on faster servers: req.isAuthenticated will return false, causing a looping redirect.  Issue goes away when use redis
 
 const app = express();
 app.use('/', express.static("static"));
 app.use(expressSession(
                       {
+                        /*store: new RedisStore({
+                            host: config.redis.host,
+                            port: config.redis.port,
+                            disableTTL: true,
+                        }),*/
+
                         store: new MongoStore({'db': 'testsessions'}),
-                        /*key: 'express.sid',
-                        resave: false,
+                        key: 'myexpress.sid',
+                        /*resave: false,
                         rolling: false,
                         saveUninitialized:false, //else passport will save empty object to store, which forces logout!
                         cookie:{

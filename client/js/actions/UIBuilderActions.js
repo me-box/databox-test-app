@@ -317,6 +317,15 @@ const _flip = (node, h)=>{
                                     });
 }
 
+
+export function closeProvenance(sourceId){
+    return {
+        type: UIBUILDER_PROVENANCE,
+        sourceId,
+        trees: [],
+    }
+}
+
 export function nodeClicked(sourceId, tid){
 
   
