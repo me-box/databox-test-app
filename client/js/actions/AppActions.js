@@ -1,4 +1,4 @@
-import { APP_INIT, APP_REMOVED, APP_MESSAGE, APP_RESET, DEBUG_MESSAGE,  DEBUG_TOGGLE_PAUSE, BULB_MESSAGE, PIPSTA_MESSAGE } from '../constants/ActionTypes';
+import { APP_INIT, APP_REMOVED, APP_MESSAGE, APP_RESET, DEBUG_MESSAGE,  DEBUG_TOGGLE_PAUSE, BULB_MESSAGE, PIPSTA_MESSAGE,UIBUILDER_INCREMENT_TICK} from '../constants/ActionTypes';
 import {networkAccess, networkError, networkSuccess} from './NetworkActions';
 import request from 'superagent';
 
@@ -39,6 +39,10 @@ export function pipstaMessage(data){
 	}
 }
 
+export function incrementTick(){
+
+}
+
 export function init(id){
   
   console.log("APP INIT HAS BEEN CALLED!!!! : " + id);
@@ -46,7 +50,7 @@ export function init(id){
   return function (dispatch, getState) {
   
     dispatch(networkAccess(`initing`));
-    console.log(`** calling ./ui/init/${id}`);
+   
     request
       .get(`/ui/init/${id}`)
       .set('Accept', 'application/json')
@@ -100,11 +104,17 @@ export function newMessage(msg) {
        
         if (state && state.mappings){
           const mappings = state.mappings[data.id] || [];
-
+          const tick = state.ticks[data.id] || 0;
           mappings.map((item)=>{
-            item.onData({msg:data}, 0, item.mapping);
+            item.onData(data, tick, item.mapping);
           });
         } 
+
+        dispatch({
+          type:UIBUILDER_INCREMENT_TICK,
+          dataId: data.id,
+          sourceId,
+        });
     }
 
     dispatch({

@@ -10,6 +10,7 @@ import {fetchChannelId} from '../actions/ChannelActions';
 class App extends Component {
 	
 	constructor(props){
+		console.log("in app...");
 		super(props);	
 		this.windowResize  = bindActionCreators(windowResize, props.dispatch);	
 		this._handleResize = this._handleResize.bind(this);

@@ -4,19 +4,19 @@ module.exports = {
 	
 	github: {
 		CLIENT_ID: '[your apps github client id]',
-    		CLIENT_SECRET: '[your apps client secret]'
+    	CLIENT_SECRET: '[your apps client secret]'
 		CALLBACK: "http://[approot]/auth/github/callback",
 		API: "https://api.github.com",
 		RAW_URL: "https://raw.githubusercontent.com",
 		URL: "https://github.com",
 	},
 	
-   	 mongo: {
-    		url : 'mongodb://localhost/testpassport',
-    	},
+   	mongo: {
+    	url : 'mongodb://mongo/testpassport',
+    },
     
-    	redis: {
-   		 host: '127.0.0.1',
-        	 port: 6379,
-    	}
+    redis: {
+   		host: 'redis',
+        port: 6379,
+    }
 }

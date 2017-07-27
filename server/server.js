@@ -1,8 +1,7 @@
 import http  from 'http';
 import express from 'express';
 import expressSession from 'express-session';
-import connectmongostore from 'connect-mongostore';
-//import connectredis from 'connect-redis';
+import connectredis from 'connect-redis';
 import bodyparser from 'body-parser';
 import config from './config';
 import websocketinit from './comms/websocket';
@@ -11,23 +10,17 @@ import initPassport from './strategies';
 import mongoose from 'mongoose';
 import ipcinit from './comms/ipc';
 import {lookup} from './datastore';
-const MongoStore = connectmongostore(expressSession);
-//const RedisStore         = connectredis(expressSession);
-mongoose.connect(config.mongo.url);
-
-//NOTE - HAVE FOUND THAT connectmongostore doesn't work on faster servers: req.isAuthenticated will return false, causing a looping redirect.  Issue goes away when use redis
+const RedisStore = connectredis(expressSession);
 
 const app = express();
 app.use('/', express.static("static"));
 app.use(expressSession(
                       {
-                        /*store: new RedisStore({
+                        store: new RedisStore({
                             host: config.redis.host,
                             port: config.redis.port,
-                            disableTTL: true,
-                        }),*/
+                        }),
 
-                        store: new MongoStore({'db': 'testsessions'}),
                         key: 'myexpress.sid',
                         /*resave: false,
                         rolling: false,
@@ -52,10 +45,7 @@ if (process.argv.length > 2){
 
 
 const ensureAuthenticated = (req, res, next) => {
-  //req.user = {username:'tlodge'}
-  //return next(null);
- 
-
+  
   if (req.isAuthenticated()){
     return  next(null);
   }
@@ -81,8 +71,7 @@ app.use('/comms',ensureAuthenticated, require('./routes/comms'));
 //check registration!!!!!!
 
 app.get('/ui/init/:id', function(req,res){
-  console.log("---->  seen an init!!");
-
+  
   const result = lookup(req.params.id);
 
   if (result){

@@ -7,5 +7,5 @@ const {dispatch} = store;
 
 
 //init("databox","testApp", dispatch);
-
+console.log("ok, in app!");
 render(<Root store={store} />,document.getElementById('root'));

@@ -17,7 +17,7 @@ export default function init(nsps, server){
         nsp.on('connection', function(socket){
 
            socket.on('join', function(app){
-              console.log("joining client to room" + app);
+              console.log("joining client to room ", app);
               socket.join(app);
               //return app; 
           });
@@ -39,13 +39,13 @@ export default function init(nsps, server){
 
 export function sendmessages(rooms, namespace, event, message){
   rooms.forEach(function(room){
-      console.log(`sending to room ${room} namespace ${namespace}`);
       this.sendmessage(room,namespace,event,message);
   }.bind(this));
   return rooms.length;
 };
 
 export function sendmessage(room, namespace, event, message){
+    
       if (_namespaces[namespace]){
         _namespaces[namespace].to(room).emit(event, message);
       }

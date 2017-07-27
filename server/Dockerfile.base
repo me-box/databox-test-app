@@ -1,0 +1,11 @@
+FROM node:boron
+
+# Create app directory
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
+
+COPY package.json .
+RUN npm install --production
+
+EXPOSE 9090
+EXPOSE 8435

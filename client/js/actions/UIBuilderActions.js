@@ -248,7 +248,6 @@ export function subscribeMappings(sourceId, mappings, transformers){
 
 	        const onData = (data, count, mapping)=>{
 	         
-           
             const {nodesByKey={}, nodesById={}, templatesById={}} = getState().uibuilder[sourceId];
 	          const {mappingId, from: {key},  to:{property}} = mapping;
 	          const template = templatesById[mapping.to.path[mapping.to.path.length-1]];
@@ -275,7 +274,7 @@ export function subscribeMappings(sourceId, mappings, transformers){
 	            const transform   = Function(key, "node", "i", transformer)(value, node, count);  
 
 	            dispatch(fn(sourceId, mapping.to.path,property,transform, enterKey, Date.now(), count));
-              dispatch(recordPath(sourceId, mappingId, mapping.from.sourceId, data.msg._path, transform));
+              dispatch(recordPath(sourceId, mappingId, mapping.from.sourceId, data._path, transform));
 	          }
 	        }
 	        dispatch(addMapping(sourceId, mappings[i].from.sourceId, {mapping:mappings[i], onData}))

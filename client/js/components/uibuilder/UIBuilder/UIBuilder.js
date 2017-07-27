@@ -9,7 +9,6 @@ class UIBuilder extends Component {
 
   constructor(props, context){
   	super(props, context);
-    this.state={showprovenance:false}
     this.closeProvenance = bindActionCreators(closeProvenance, props.dispatch);
   }	
 
