@@ -1,6 +1,6 @@
 import {sendmessage} from './websocket';
 import net from 'net'
-import {savedata, printstorage} from '../datastore';
+import {savedata} from '../datastore';
 
 export default function init(){
 	var server = net.createServer(function(socket) {
@@ -9,14 +9,13 @@ export default function init(){
 				
 				const {type, msg} = JSON.parse(data.toString('utf8'));
 				let channel = "";
-				
+
 				switch (type){
 					case "message":
 						if (msg.type==="control"){
 						
 							if (msg.payload && msg.payload.command === "init"){
 								savedata(msg.payload.data.id, msg.payload.data);
-								printstorage();
 							}
 						}
 						channel = msg.channel;
