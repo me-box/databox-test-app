@@ -249,6 +249,10 @@ export function subscribeMappings(sourceId, mappings, transformers){
 	        const onData = (data, count, mapping)=>{
 	         
             const {nodesByKey={}, nodesById={}, templatesById={}} = getState().uibuilder[sourceId];
+            const {screen:{dimensions}} = getState();
+
+            console.log("on data - screen is", screen);
+            
 	          const {mappingId, from: {key},  to:{property}} = mapping;
 	          const template = templatesById[mapping.to.path[mapping.to.path.length-1]];
 	          const value   = resolvePath(mapping.from.key, mapping.from.path, data);
@@ -271,7 +275,7 @@ export function subscribeMappings(sourceId, mappings, transformers){
               //unsubscribe this mapping?
 	          }else if (shouldenter){
 	            const transformer = transformers[mappingId] || defaultCode(key,property);
-	            const transform   = Function(key, "node", "i", transformer)(value, node, count);  
+	            const transform   = Function(key, "node", "i", "w", "h", transformer)(value, node, count, dimensions.w, dimensions.h);  
 
 	            dispatch(fn(sourceId, mapping.to.path,property,transform, enterKey, Date.now(), count));
               dispatch(recordPath(sourceId, mappingId, mapping.from.sourceId, data._path, transform));
