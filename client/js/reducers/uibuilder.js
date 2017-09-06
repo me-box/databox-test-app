@@ -9,7 +9,7 @@ const initialState = {
   templates: [],
   mappings: {}, 
   ticks : {},
-  canvasdimensions: {w:0, h:0},  
+  canvasdimensions: {w:1, h:1},  
   tree: {},  
   provenance: [],
   datapath: {},

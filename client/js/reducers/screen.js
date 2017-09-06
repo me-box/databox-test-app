@@ -12,6 +12,7 @@ export default function screen(state = {dimensions:_initialDimensions()}, action
   switch (action.type) {
 
   	case  WINDOW_RESIZED:
+      console.log(action);
 	    return Object.assign({}, state, {
         	dimensions: {w:action.w, h: action.h}
       })
