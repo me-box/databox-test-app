@@ -90,7 +90,6 @@ class UIBuilder extends Component {
 function select(state, newProps) {
 
   return {
-    dimensions: state.screen.dimensions,
     canvasdimensions: state.uibuilder[newProps.sourceId] ? state.uibuilder[newProps.sourceId].canvasdimensions : {w:0,h:0},
     nodes: state.uibuilder[newProps.sourceId] ? state.uibuilder[newProps.sourceId].nodes : [],
     nodesById: state.uibuilder[newProps.sourceId] ? state.uibuilder[newProps.sourceId].nodesById : {},

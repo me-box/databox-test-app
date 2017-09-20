@@ -148,18 +148,6 @@ class AppContent extends Component {
 					WebkitFlex: '0 0 auto',
 					flex: '0 0 auto',
 				}
-
-
-				/*	{j==0 && <div style={titlebar}>
-								<div className="row">
-									<div style={remove}>
-										<div className="centered" onClick={this.appRemoved.bind(this, app.id)}><i className="fa fa-times fa-fw"></i></div>
-									</div>
-									<div>
-										<div className="centered">{app.name}</div>
-									</div>
-								</div>
-							</div> }*/
 								
 				return  <div>
 							<div key={`${appkey}${sourcekey}`} style={style}>
@@ -176,14 +164,14 @@ class AppContent extends Component {
 	    return <ReactCSSTransitionGroup className="container" style={flexcontainer} transitionName="flexitem" transitionEnterTimeout={500} transitionLeaveTimeout={300}>{applist}</ReactCSSTransitionGroup>
          	
 	}
-};
+}
 
 function select(state) {
   return {
     apps: state.apps,
     layout: state.layout,
     dimensions: state.screen.dimensions,
-  };
+  }
 }
 
 AppContent.contextTypes = {
