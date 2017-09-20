@@ -73,7 +73,8 @@ class UIBuilder extends Component {
   render() {
 
     //just need the actual data here as this is the final thing to come out!
-  	const {canvasdimensions, dimensions:{w,h}, sourceId} = this.props;
+    //dimensions:{w,h}
+  	const {canvasdimensions, w, h, sourceId} = this.props;
     
     return  <div>
               <div className="canvas" style={{width:"100%", height:"100%"}}>
