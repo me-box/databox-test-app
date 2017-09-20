@@ -212,10 +212,12 @@ export function init(id){
 			}else{
 			
 			  dispatch(networkSuccess(`successfully inited!`));
-				console.log(res.body);
-
+				
 				if (res.body.init){
-					const {templates, mappings, transformers, canvasdimensions, tree} = res.body.init;
+				
+        	  const {templates, mappings, transformers, canvasdimensions, tree} = res.body.init;
+            console.log("uibuilder init data:")
+            console.log(JSON.stringify(res.body.init, null, 4));
 
 			  		dispatch({
 			  			type: UIBUILDER_INIT,
@@ -238,9 +240,20 @@ export function assessForRemoval(nodesToCheck, data, count){
   
   return nodesToCheck.reduce((acc,item)=>{
       const {key,node} = item;
-      const remove = node.exitFn ? Function("key", ...node.exitFn.params, node.exitFn.body)(key,data,count) : false;
+      console.log("Assessing function for key", key);
+      console.log("exit fn is ", node.exitFn);
+
+      const removeFn = node.exitFn ? Function("key", ...node.exitFn.params, node.exitFn.body) : (k,d,c)=>false;
+      
+      console.log("calling", removeFn);
+      const remove = removeFn(key,data,count);
+      console.log("got answer", remove);
+
       if (remove){
+        console.log("***-remove is TRUE, so adding to list");
         acc.push({nodeId:node.id, key});
+      }else{
+        console.log("remove is false....")
       }
       return acc;
   },[]);
@@ -302,9 +315,13 @@ export function subscribeMappings(sourceId, mappings, transformers){
             console.log("testing nodes", nodestotestforexit);
 
             const toremove = assessForRemoval(nodestotestforexit, _data, count);
-	          console.log("to remove", toremove);
+	          if (toremove.length > 0){
+              console.log("******************************************************************************************************************************************************** HAVE NODES TO REMOVE ***************************************************************************************************************");
+            }
+            console.log("to remove", toremove);
             
             toremove.forEach((item)=>{
+
               dispatch(removeNode(sourceId, item.nodeId, [template.id], item.key));
             });
             

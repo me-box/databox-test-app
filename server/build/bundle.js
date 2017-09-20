@@ -217,7 +217,7 @@ app.use('/', _express2.default.static("static"));
 app.use((0, _cookieParser2.default)());
 
 app.set('view engine', 'html');
-app.engine('html', __webpack_require__(12).renderFile);
+app.engine('html', __webpack_require__(13).renderFile);
 
 var server = _http2.default.createServer(app);
 var PORT = 9090;
@@ -231,19 +231,19 @@ if (process.argv.length > 2) {
 
 app.get('/', function (req, res) {
   if (req.query && req.query.username) {
-    console.log("setting cookie", req.query.username);
     res.cookie('username', req.query.username, { maxAge: 60 * 1000 });
   }
   res.render('index');
 });
 
-app.use('/comms', __webpack_require__(13));
+app.use('/comms', __webpack_require__(14));
 
 app.get('/ui/init/:id', function (req, res) {
 
   var result = (0, _datastore.lookup)(req.params.id);
 
   if (result) {
+    console.log("SENDING INIT DATA");
     res.send({ success: true, init: result });
   } else {
     res.send({ success: false });
@@ -303,46 +303,129 @@ var _net2 = _interopRequireDefault(_net);
 
 var _datastore = __webpack_require__(2);
 
+var _jsonSocket = __webpack_require__(12);
+
+var _jsonSocket2 = _interopRequireDefault(_jsonSocket);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function init() {
-	var server = _net2.default.createServer(function (socket) {
-		socket.on('data', function (data) {
-			try {
-				var _JSON$parse = JSON.parse(data.toString('utf8'));
+/*const NETSTRING_SEPARATOR_CODE = 58;
 
-				var type = _JSON$parse.type;
-				var msg = _JSON$parse.msg;
+const readfirstpacket = (netstring, { encoding = 'utf-8', response = 'string' }={})=>{
 
-				var channel = "";
+	netstring = new Buffer(netstring, encoding);
+	
+	for (let i = 0; i < netstring.length ; i++) {
+		let val = netstring[i];
+        //First find the ':' - NETSTRING_SEPARATOR character.
+        if (NETSTRING_SEPARATOR_CODE === val) {
+        	let len = netstring.toString(encoding, 0, i);
+            len = Number.parseInt(len);
+        	const stringStart = i + 1;
+        	const string = netstring.slice(stringStart, stringStart + len);
+        	return {remaining: len - string.length, chunk: string.toString(encoding)}
+        }
+	}
+	return {remaining:0, chunk: ""};
+}
 
-				switch (type) {
-					case "message":
-						if (msg.type === "control") {
+*/
+var handleMsg = function handleMsg(data) {
+	try {
+		var type = data.type;
+		var msg = data.msg; //JSON.parse(data.toString('utf8'));
 
-							if (msg.payload && msg.payload.command === "init") {
-								(0, _datastore.savedata)(msg.payload.data.id, msg.payload.data);
-							}
-						}
-						channel = msg.channel;
-						delete msg.channel;
-						(0, _websocket.sendmessage)(channel, "databox", "message", msg);
-						break;
-
-					default:
-						channel = msg.channel;
-						delete msg.channel;
-						(0, _websocket.sendmessage)(channel, "databox", type, msg);
-
+		var channel = "";
+		console.log("test server, sending", msg);
+		switch (type) {
+			case "message":
+				if (msg.type === "control") {
+					console.log("------------> seen an init message <-------------------------");
+					if (msg.payload && msg.payload.command === "init") {
+						console.log("*** SAVING DATA", JSON.stringify(msg.payload.data, null, 4));
+						(0, _datastore.savedata)(msg.payload.data.id, msg.payload.data);
+					}
 				}
-			} catch (err) {
-				console.log("error parsing data", data.toString('utf8'));
-			}
+				channel = msg.channel;
+				delete msg.channel;
+				(0, _websocket.sendmessage)(channel, "databox", "message", msg);
+				break;
+
+			default:
+				channel = msg.channel;
+				delete msg.channel;
+				(0, _websocket.sendmessage)(channel, "databox", type, msg);
+		}
+	} catch (err) {
+		console.log("error parsing data", data);
+	}
+};
+
+function init() {
+
+	console.log("INITING THE SERVER!");
+
+	var server = _net2.default.createServer();
+
+	server.on('connection', function (socket) {
+		//This is a standard net.Socket
+		socket = new _jsonSocket2.default(socket); //Now we've decorated the net.Socket to be a JsonSocket
+		socket.on('message', function (message) {
+			console.log("got a message!!");
+			handleMsg(message);
 		});
+	});
+
+	server.on('error', function (err) {
+		//This is a standard net.Socket
+		console.log(err);
 	});
 
 	server.listen(8435, '0.0.0.0');
 }
+
+/*
+var server = net.createServer(function(socket) {
+	let remaining = 0;
+let chunks = [];
+socket.on('data', function(data){
+console.log("incoming data!");
+if (remaining < 0){
+console.log("resetting..remaining is", remaining);
+chunks  = [];
+remaining = 0;
+}
+else if (remaining == 0){
+chunks = [];
+try{
+	const pkt = readfirstpacket(data);
+
+	if (pkt.remaining == 0)	{
+			handleMsg(pkt.chunk);
+	}else{
+		remaining = pkt.remaining;
+		chunks.push(pkt.chunk);
+	}
+}catch(err){
+	console.log("error reading first packet");
+	remaining = 0;
+	chunks = [];
+};
+}
+else{
+remaining = remaining - (data.length-1);
+chunks.push(data.slice(0, data.length-1));
+	if (remaining == 0){
+	const pkt = chunks.reduce((acc, c)=>{
+		acc += c;
+		return acc;
+	},"");
+	handleMsg(pkt);
+}
+}
+});
+});
+server.listen(8435, '0.0.0.0');*/
 
 /***/ }),
 /* 11 */
@@ -354,10 +437,16 @@ module.exports = require("net");
 /* 12 */
 /***/ (function(module, exports) {
 
-module.exports = require("ejs");
+module.exports = require("json-socket");
 
 /***/ }),
 /* 13 */
+/***/ (function(module, exports) {
+
+module.exports = require("ejs");
+
+/***/ }),
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -372,10 +461,9 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var router = _express2.default.Router();
 
 router.get('/channelID', function (req, res) {
-	console.log("got cookies", req.cookies);
-
 	if (req.cookies && req.cookies.username) {
 		res.send({ channelID: req.cookies.username });
+		return;
 	}
 	res.status(500).send({ channelID: "", error: "can't find this user" });
 	//res.send({channelID:req.user.username}); 		

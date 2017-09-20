@@ -229,8 +229,11 @@ function viz(state = initialState, action) {
   switch (action.type) {
 
   	case UIBUILDER_INIT:
+
       const {nodes, nodesById, nodesByKey} = _cloneStaticTemplates(action.templates, action.templatesById);
 
+      console.log("ok in uibuilder init!! nodes", nodesById);
+      console.log("templates", action.templatesById);
 
   		const _state = Object.assign({}, state, {
                                                 nodes,

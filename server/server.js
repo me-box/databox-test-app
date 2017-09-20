@@ -27,7 +27,6 @@ ipcinit();
 
 app.get('/', function(req,res){
   if (req.query && req.query.username){
-    console.log("setting cookie", req.query.username);
     res.cookie('username', req.query.username, { maxAge:60 * 1000 });
   }
   res.render('index');
@@ -40,8 +39,9 @@ app.use('/comms', require('./routes/comms'));
 app.get('/ui/init/:id', function(req,res){
   
   const result = lookup(req.params.id);
-
+  
   if (result){
+    console.log("SENDING INIT DATA");
     res.send({success:true, init:result});
   }
   else{
