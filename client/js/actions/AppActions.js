@@ -82,6 +82,8 @@ export function newMessage(msg) {
   
   return function (dispatch, getState) {
   
+    console.log(msg);
+    
     if (msg.type === "control" && msg.payload.command==="reset"){
       dispatch({type: APP_RESET})
       return;

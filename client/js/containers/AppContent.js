@@ -32,10 +32,6 @@ class AppContent extends Component {
 		Object.assign(this, ...bindActionCreators(AppActions, props.dispatch));	
 	} 
 	
-	componentDidMount(){
-  		window.addEventListener('resize', this._handleResize);
-	}
-
 	render() {
 	
 		const flexcontainer = {
