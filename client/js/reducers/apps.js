@@ -22,7 +22,19 @@ const addGaugeData = (state, action) =>{
 
 const append = (state = {data:[]}, action)=>{
 	const {options, values} = action.data;
-	return (Object.assign({}, ...state, {data: [...state.data || [], values], options: options, view:action.view, sourceId: action.sourceId, id: action.id, name: action.name}));
+	const {view, sourceId, id, name} = action;
+	
+	//return (Object.assign({}, ...state, {data: [...state.data || [], values], options: options, view:action.view, sourceId: action.sourceId, id: action.id, name: action.name}));
+
+	return {
+		...state,
+		data : options.maxreadings ? [...state.data || [], values].slice(-options.maxreadings) : [...state.data || [], values],
+		options,
+		view,
+		sourceId,
+		id,
+		name,
+	}
 }
 
 const replace = (state = {data:{}}, action)=>{

@@ -27,21 +27,23 @@ const degrees = (radians)=>{
 
 export default class Gauge extends Component {
   
-    render(){
+  render(){
 
-        const {w,h,options, data} = this.props;
+    const {w,h,options, data} = this.props;
         
         
-        if (data.data.length < 0 )
-          return null;
-
-        const STROKEWIDTH      = 80;
-        const OUTERSTROKEWIDTH = 5;
-        const BORDERPADDING    = 30;
-		let {min,max} = data;
+    if (data.data.length < 0 )
+      return null;
+    
+    const TITLESIZE = 30;
+    const STROKEWIDTH  = 80;
+    const OUTERSTROKEWIDTH = 5;
+    const BORDERPADDING = 30;
+		
+    let {min,max} = data;
 		
 		
-		if (options && "min" in options){
+	 if (options && "min" in options){
 			min = options.min;
 		}
 		
@@ -49,50 +51,49 @@ export default class Gauge extends Component {
 			max = options.max;
 		}
 		
-        const lines = data.data.map((items,i)=>{
-            const props = {	...this.props, 
-            				data:items, 
-            				MIN: min, 
-            				MAX: max,
-            				p: (STROKEWIDTH*i*2) + OUTERSTROKEWIDTH, 
-            				STROKEWIDTH, 
-            				OUTERSTROKEWIDTH, 
-            				BORDERPADDING
+    const lines = data.data.map((items,i)=>{
+      const props = {	...this.props, 
+          data:items, 
+          MIN: min, 
+          MAX: max,
+          p: (STROKEWIDTH*i*2) + OUTERSTROKEWIDTH, 
+          STROKEWIDTH, 
+          OUTERSTROKEWIDTH, 
+          BORDERPADDING
             				
-            				}
-            return <Line key={i} {...props} />
-        });
+      }
+      return <Line key={i} {...props} />
+    });
         
-        let labels = [];
-        if (options.labels){
-        	var labelarray = options.labels.split(",");
-        	labels = labelarray.reduce((acc, label)=>{
-        		const [name,value] = label.split(":");
-        		if (name && value){
-        			
-        			
-        			if (value.trim() === "max"){
-        				acc.push({value:max, text:name});
-        			}
-        			else if (value.trim() === "min"){
-        				acc.push({value:min, text:name});
-        			}
-        			else if (!isNaN(parseFloat(value)) && isFinite(value)){
-        				acc.push({value:value, text:name});
-        			}
-        		}
-        		return acc;
-        	},[]);
+    let labels = [];
+
+    if (options.labels){
+      const labelarray = options.labels.split(",");
+      labels = labelarray.reduce((acc, label)=>{
+        const [name,value] = label.split(":");
+        if (name && value){			
+        	if (value.trim() === "max"){
+        		acc.push({value:max, text:name});
+        	}
+        	else if (value.trim() === "min"){
+        		acc.push({value:min, text:name});
+        	}
+        	else if (!isNaN(parseFloat(value)) && isFinite(value)){
+        		acc.push({value:value, text:name});
+        	}
         }
+        return acc;
+      },[]);
+    }
         
 		const markers = labels.map((marker)=>{
 			marker.value = Math.min(Math.max(min, marker.value),max);
 			return marker;
 		}).map((marker,i)=>{
         	
-        	const from  = (i == 0) ? min : labels[i-1].value;
+      const from  = (i == 0) ? min : labels[i-1].value;
         	
-        	const markerprops = {
+      const markerprops = {
         		STROKEWIDTH,
         		OUTERSTROKEWIDTH,
         		BORDERPADDING,
@@ -103,32 +104,32 @@ export default class Gauge extends Component {
         		from: from,
         		to: marker.value,
         		text: marker.text,
-        	}
+      }
         	
-        	return <Marker {...markerprops}/>
-        });
+      return <Marker {...markerprops}/>
+    });
         
-		const TITLESIZE = 30;
+	
 		const textstyle = {
-                              textAnchor:"middle",
-                              fill: 'white',
-                              fontSize: TITLESIZE,
-                       }
-		
-		//const r = h > (w/2) ? (w-OUTERSTROKEWIDTH-STROKEWIDTH)/2 : (h-(STROKEWIDTH/2));
-        const r = h > (w/2) ? (w-OUTERSTROKEWIDTH-STROKEWIDTH)/2 : (h-(STROKEWIDTH/2));
-       
-        const textprops = {
-                                x:w/2,
-                                y:h-r-TITLESIZE-APP_TITLEBAR_HEIGHT,
-        }
-		
-        return <svg width={w} height={h}>  
-                 {lines}
-                 <g><text style={textstyle} {...textprops}> {options.title || ""} </text></g>
-                  {markers}      
-                </svg>
+        textAnchor:"middle",
+        fill: 'white',
+        fontSize: TITLESIZE,
     }
+		
+	
+    const r = h > (w/2) ? (w-OUTERSTROKEWIDTH-STROKEWIDTH)/2 : (h-(STROKEWIDTH/2));
+       
+    const textprops = {
+      x:w/2,
+      y:h-r-TITLESIZE-APP_TITLEBAR_HEIGHT - (options.labels ? 20 : 0),
+    }
+		
+    return <svg width={w} height={h}>  
+              {lines}
+              <g><text style={textstyle} {...textprops}> {options.title || ""} </text></g>
+              {markers}      
+            </svg>
+  }
 }
 
 

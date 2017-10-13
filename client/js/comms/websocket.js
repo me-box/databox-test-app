@@ -17,16 +17,15 @@ export default function init(namespace, appId, dispatch) {
   });
 
   socket.on("message", function(data){
-  	 
+  	//TODO: check if this is still needed!
   	if (data && data.type==="control"){
   		if ((Date.now() - startconnect) > 8000){
-  	  		console.log("LEAVING CHANNEL " + data.payload.channel);
+  	  	console.log("LEAVING CHANNEL " + data.payload.channel);
   			socket.emit("leave", data.payload.channel);
   		}else{
   			console.log("not leaving this channel as only just joined!");
   		}
   	}
-    console.log("seen new message", data);
     dispatch(newMessage(data));
   });
   
@@ -39,16 +38,14 @@ export default function init(namespace, appId, dispatch) {
   });
   
   socket.on("notify", function(data){
-  	console.log("notify message");
   	console.log(data);
   });
   
   socket.on("pipstaprint", function(data){
-	dispatch(pipstaMessage(data));
+	   dispatch(pipstaMessage(data));
   });
   
   socket.on("plugout", function(data){
-  	console.log("plugout message");
   	console.log(data);
   });
 

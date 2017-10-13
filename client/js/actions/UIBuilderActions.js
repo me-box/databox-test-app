@@ -149,7 +149,7 @@ function updateNodeTransform(sourceId:number, path:Array, property:string, trans
   
     if (_shouldClone(path, enterKey,  (getState().uibuilder[sourceId] || {}).nodesByKey)){
         
-        //console.log("YES - cloning!");
+
 
         dispatch({
             type: UIBUILDER_CLONE_NODE_WITH_TRANSFORM,
@@ -204,7 +204,6 @@ export function selectMapping(sourceId, mapping){
 
 export function init(id){
 	
-	console.log("OK INIT HAS BEEN CALLED!!!! : " + id);
 
 	return function (dispatch, getState) {
 	
@@ -224,9 +223,7 @@ export function init(id){
 				if (res.body.init){
 				
         	  const {templates, mappings, transformers, canvasdimensions, tree} = res.body.init;
-            console.log("uibuilder init data:")
-            console.log(JSON.stringify(res.body.init, null, 4));
-
+           
 			  		dispatch({
 			  			type: UIBUILDER_INIT,
               sourceId: id,
