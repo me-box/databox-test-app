@@ -338,6 +338,8 @@ var handleMsg = function handleMsg(data) {
 		var channel = "";
 		console.log("test server, sending", msg);
 		switch (type) {
+
+			case "debug":
 			case "message":
 				if (msg.type === "control") {
 					console.log("------------> seen an init message <-------------------------");
@@ -348,7 +350,7 @@ var handleMsg = function handleMsg(data) {
 				}
 				channel = msg.channel;
 				delete msg.channel;
-				(0, _websocket.sendmessage)(channel, "databox", "message", msg);
+				(0, _websocket.sendmessage)(channel, "databox", type, msg);
 				break;
 
 			default:

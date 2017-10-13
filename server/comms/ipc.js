@@ -31,6 +31,8 @@ const handleMsg = (data)=>{
 		let channel = "";
 		console.log("test server, sending", msg);
 		switch (type){
+
+			case "debug":
 			case "message":
 				if (msg.type==="control"){
 					console.log("------------> seen an init message <-------------------------");
@@ -41,8 +43,10 @@ const handleMsg = (data)=>{
 				}
 				channel = msg.channel;
 				delete(msg.channel); 
-				sendmessage(channel, "databox", "message", msg);
+				sendmessage(channel, "databox", type, msg);
 				break;
+
+			
 
 			default:
 				channel = msg.channel;
