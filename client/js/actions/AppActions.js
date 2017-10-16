@@ -44,8 +44,6 @@ export function incrementTick(){
 }
 
 export function init(id){
-  
-  console.log("APP INIT HAS BEEN CALLED!!!! : " + id);
 
   return function (dispatch, getState) {
   
