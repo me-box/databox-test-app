@@ -83,6 +83,7 @@ export default class Group extends PureComponent {
 		const {id, nodesById, sourceId} = this.props;		
 		const node = nodesById[id];
 		const {x=0, y=0, width, height, style, transform="translate(0,0)", children} = node;
+		
 
 		const _style = camelise(style);
 		const is = _interpolatedStyles(_style);

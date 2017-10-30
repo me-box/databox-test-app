@@ -96,22 +96,43 @@ const _cloneStaticTemplates = (templates, blueprints)=>{
     },{nodes:[], nodesByKey: {}, nodesById:{}});
 }
 
+const _adjustForCenter = (node, action)=>{
+  if (node.type === "group"){
+    if (action.property == "x"){
+      return {
+          ...action,
+          value: action.value - node.width/2,
+      }
+    }
+    if (action.property == "y"){
+      return {
+          ...action,
+          value: action.value - node.height/2,
+      }
+    }
+  }
+  return action;
+}
+
 const _updateNodeAttributes = (nodesByKey, nodesById, action)=>{
  
   if (!nodesById)
     return {};
-
   
   const templateId = action.path[action.path.length-1];
   const subkey     = action.enterKey ? action.enterKey : "root";
   const nodeId     = nodesByKey[templateId] ? nodesByKey[templateId][subkey] : null;
 
-  //should always have a nodeId, as clone node was dispatched first
+  //adjust x,y for groups so move around center
+  const _action = _adjustForCenter(nodesById[nodeId],action);
+
+  //should always have a nodeId, as clone node was dispatched first  
   if (nodeId){
      const n =  {
                   ...nodesById[nodeId], 
-                  [action.property]:action.value
+                  [_action.property]:_action.value,
                 }
+
 
      return {[nodeId] : n}
   }
@@ -231,7 +252,7 @@ const _combine = (newtransform="", oldtransform="")=>{
 
 const _createTransform = (node, type, transform)=>{
 
-    
+   console.log("in create transform!");
    const {x,y}   =  originForNode(node);
 
    switch(type){
@@ -242,6 +263,10 @@ const _createTransform = (node, type, transform)=>{
 
       case "translate":
           const {translate} = componentsFromTransform(transform);
+          console.log("translate, components from transform: ", translate);
+          console.log(`orogin form node is ${x}, ${y}`);
+          console.log("node transform is", node.transform);
+
           return _combine(`translate(${translate})`,  node.transform || "");
 
       case "rotate":
@@ -258,6 +283,7 @@ function viz(state = initialState, action) {
   switch (action.type) {
 
   	case UIBUILDER_INIT:
+     
 
       const {nodes, nodesById, nodesByKey} = _cloneStaticTemplates(action.templates, action.templatesById);
 
@@ -270,7 +296,8 @@ function viz(state = initialState, action) {
                                                 canvasdimensions: action.canvasdimensions,
                                                 tree: action.tree,
                                               });
-	   	return _state;
+	   
+      return _state;
 	
   case UIBUILDER_REMOVE_NODE:
       

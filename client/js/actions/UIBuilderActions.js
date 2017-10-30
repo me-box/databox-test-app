@@ -222,13 +222,13 @@ export function init(id){
 				
 				if (res.body.init){
 				
-        	  const {templates, mappings, transformers, canvasdimensions, tree} = res.body.init;
+        	  const {templates, templatesById, mappings, transformers, canvasdimensions, tree} = res.body.init;
            
 			  		dispatch({
 			  			type: UIBUILDER_INIT,
               sourceId: id,
-			  			templates: _parenttemplates(templates),
-			  			templatesById: templates,
+			  			templates: templates,
+			  			templatesById: templatesById,
               canvasdimensions,
               tree,
 			  		});
@@ -274,11 +274,13 @@ export function subscribeMappings(sourceId, mappings, transformers){
             
             const {nodesByKey={}, nodesById={}, templatesById={}, canvasdimensions={w:dimensions.w,h:dimensions.h}} = getState().uibuilder[sourceId];
             
+
              //adjust dims for viewbox!
             const wratio = canvasdimensions.w/dimensions.w;
             const hratio = canvasdimensions.h/dimensions.h;
 
 	          const {mappingId, from: {key},  to:{property}} = mapping;
+
 	          const template = templatesById[mapping.to.path[mapping.to.path.length-1]];
 	          const value   = resolvePath(mapping.from.key, mapping.from.path, data);
 	          
@@ -315,6 +317,8 @@ export function subscribeMappings(sourceId, mappings, transformers){
             
 	          if (shouldenter){
 	            const transformer = transformers[mappingId] || defaultCode(key,property);
+              console.log("transformer:", transformer);
+              
               const node = _getNode(nodesByKey, nodesById, enterKey, mapping.to.path); 
               //this is getting quite big, so we should turn it into an object!
 	            const transform   = Function("key", key, "node", "i", "w", "h", transformer)(enterKey || "root", value, node, count, wratio*dimensions.w, hratio * dimensions.h);  
