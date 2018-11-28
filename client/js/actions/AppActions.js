@@ -46,8 +46,8 @@ export function incrementTick(){
 export function init(id){
 
   return function (dispatch, getState) {
-  
-    dispatch(networkAccess(`initing`));
+    console.log("**** OK INITING TEST APP!", id)
+    dispatch(networkAccess(`initing test app`));
    
     request
       .get(`/ui/init/${id}`)
@@ -58,7 +58,7 @@ export function init(id){
         dispatch(networkError(`failed init`));
       }else{
       
-        dispatch(networkSuccess(`successfully inited!`));
+        dispatch(networkSuccess(`----> successfully inited!`));
         console.log(res.body);
 
         if (res.body.init){

@@ -9,14 +9,29 @@ class Plug extends Component {
 	} 
 
 	render() {
+
+		const {plugs} = this.props;
+		console.log("have plugs!!", plugs);
+		
+		const pluglist = plugs.map((plug,i)=>{
+			
+			
+			const plugstyle = {
+				color: red,
+			}
+			
+			return <div key={i}>
+					 <div className="centered" style={plugstyle}>
+						<i className="fa fa-plug fa-fw" style={{fontSize: '8em'}}> </i>		 	
+					 </div>
+				   </div>
+		});
 	    return (
 	    	<div className="column">
-	    		<div>
-	    			<h1> Plug </h1>
-	    		</div>
+	    		{pluglist}
 	    	</div>
 	    );
-	}
+	  }
 };
 
 function select(state) {

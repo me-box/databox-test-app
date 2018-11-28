@@ -108,7 +108,7 @@ function init(nsps, server) {
         socket.on('join', function (app) {
           console.log("joining client to room ", app);
           socket.join(app);
-          //return app;
+          //return app; 
         });
 
         socket.on('leave', function (app) {
@@ -332,8 +332,8 @@ const readfirstpacket = (netstring, { encoding = 'utf-8', response = 'string' }=
 */
 var handleMsg = function handleMsg(data) {
 	try {
-		var type = data.type;
-		var msg = data.msg; //JSON.parse(data.toString('utf8'));
+		var type = data.type,
+		    msg = data.msg; //JSON.parse(data.toString('utf8'));
 
 		var channel = "";
 		console.log("test server, sending", msg);
